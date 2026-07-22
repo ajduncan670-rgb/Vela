@@ -255,13 +255,12 @@ textarea.finput{resize:vertical;min-height:80px}
 <script src="/auth-config.js"></script>
 <script>
 (function() {
-  // Demo mode — no Supabase configured yet
+  // Demo mode — Supabase not configured
   if (!_supabase) {
     window.__VELA_USER = null;
     return;
   }
 
-  // Hide until auth resolves — prevents flash
   document.documentElement.style.visibility = 'hidden';
 
   function setUser(user) {
@@ -273,42 +272,48 @@ textarea.finput{resize:vertical;min-height:80px}
                : user.email.split('@')[0],
       mode:  (user.user_metadata && user.user_metadata.mode) || null
     };
+    document.documentElement.style.visibility = 'visible';
   }
 
-  // onAuthStateChange fires reliably after every login, redirect, and page load
-  // It catches sessions that getSession() misses due to timing
-  var resolved = false;
-  _supabase.auth.onAuthStateChange(function(event, session) {
-    if (resolved) return; // only act on first event
-    resolved = true;
+  function noSession() {
+    // Clear the hint and send to login
+    try { sessionStorage.removeItem('vela_session_hint'); } catch(e) {}
+    window.location.replace('/login');
+  }
 
-    if (!session) {
-      window.location.replace('/login');
+  // Check if we just came from signup/login — give Supabase extra time to write session
+  var freshLogin = false;
+  try { freshLogin = !!sessionStorage.getItem('vela_session_hint'); } catch(e) {}
+  if (freshLogin) {
+    try { sessionStorage.removeItem('vela_session_hint'); } catch(e) {}
+  }
+
+  // Primary: getSession() — works perfectly for established sessions
+  _supabase.auth.getSession().then(function(result) {
+    var session = result && result.data && result.data.session;
+    if (session) {
+      setUser(session.user);
       return;
     }
-    setUser(session.user);
+
+    // No session yet — if we just came from login/signup, wait a moment and retry once
+    // Supabase may still be writing to localStorage
+    if (freshLogin) {
+      setTimeout(function() {
+        _supabase.auth.getSession().then(function(r2) {
+          var s2 = r2 && r2.data && r2.data.session;
+          if (s2) { setUser(s2.user); } else { noSession(); }
+        }).catch(noSession);
+      }, 800);
+    } else {
+      // Not a fresh login — truly no session
+      noSession();
+    }
+  }).catch(function() {
+    // Supabase unreachable — demo mode fallback
+    window.__VELA_USER = null;
     document.documentElement.style.visibility = 'visible';
   });
-
-  // Fallback: if onAuthStateChange doesn't fire within 3s, check manually
-  // (can happen in some browsers with strict cookie settings)
-  setTimeout(function() {
-    if (resolved) return;
-    resolved = true;
-    _supabase.auth.getSession().then(function(result) {
-      var session = result && result.data && result.data.session;
-      if (!session) {
-        window.location.replace('/login');
-        return;
-      }
-      setUser(session.user);
-      document.documentElement.style.visibility = 'visible';
-    }).catch(function() {
-      // Supabase unreachable — show app in demo mode
-      window.__VELA_USER = null;
-      document.documentElement.style.visibility = 'visible';
-    });
-  }, 3000);
 })();
 </script>
 <div id="root"></div>

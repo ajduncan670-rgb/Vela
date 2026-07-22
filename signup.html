@@ -279,9 +279,11 @@ async function handleSignup(e) {
   // If email confirmation is ON in Supabase — send to verify page
   // If email confirmation is OFF — session is live, go straight to app
   if (data.session) {
+    // Store session hint so app guard doesn't race against Supabase localStorage write
+    try { sessionStorage.setItem('vela_session_hint', '1'); } catch(e) {}
     window.location.replace('/app');
   } else {
-    window.location.href = '/verify-email?email=' + encodeURIComponent(email);
+    window.location.replace('/verify-email?email=' + encodeURIComponent(email));
   }
 }
 </script>

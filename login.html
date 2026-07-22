@@ -243,6 +243,7 @@ async function handleLogin(e) {
     return;
   }
 
+  try { sessionStorage.setItem('vela_session_hint', '1'); } catch(e) {}
   window.location.replace('/app');
 }
 
