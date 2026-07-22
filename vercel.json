@@ -15,8 +15,8 @@
       "destination": "/blog.html"
     },
     {
-      "source": "/context-is-the-moat",
-      "destination": "/context-is-the-moat.html"
+      "source": "/blog/(.*)",
+      "destination": "/blog.html"
     }
   ],
   "redirects": [
@@ -41,15 +41,6 @@
         {
           "key": "Referrer-Policy",
           "value": "strict-origin-when-cross-origin"
-        }
-      ]
-    },
-    {
-      "source": "/vela.css",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=86400"
         }
       ]
     }
