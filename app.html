@@ -250,40 +250,65 @@ textarea.finput{resize:vertical;min-height:80px}
 </head>
 
 <body>
-<!-- Supabase auth guard — place inside body so DOM is ready -->
+<!-- Supabase auth guard -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/auth-config.js"></script>
 <script>
-(async function() {
-  // If auth-config.js hasn't set SUPABASE_URL yet, run in demo mode — don't block
-  if (typeof SUPABASE_URL === 'undefined' || SUPABASE_URL === 'YOUR_SUPABASE_PROJECT_URL') {
+(function() {
+  // Demo mode — no Supabase configured yet
+  if (!_supabase) {
     window.__VELA_USER = null;
     return;
   }
-  // Hide page until we know session state — prevents flash of app before redirect
+
+  // Hide until auth resolves — prevents flash
   document.documentElement.style.visibility = 'hidden';
-  try {
-    var r = await _supabase.auth.getSession();
-    var session = r && r.data && r.data.session;
+
+  function setUser(user) {
+    window.__VELA_USER = {
+      id:    user.id,
+      email: user.email,
+      name:  (user.user_metadata && user.user_metadata.full_name)
+               ? user.user_metadata.full_name
+               : user.email.split('@')[0],
+      mode:  (user.user_metadata && user.user_metadata.mode) || null
+    };
+  }
+
+  // onAuthStateChange fires reliably after every login, redirect, and page load
+  // It catches sessions that getSession() misses due to timing
+  var resolved = false;
+  _supabase.auth.onAuthStateChange(function(event, session) {
+    if (resolved) return; // only act on first event
+    resolved = true;
+
     if (!session) {
       window.location.replace('/login');
       return;
     }
-    window.__VELA_USER = {
-      id:    session.user.id,
-      email: session.user.email,
-      name:  (session.user.user_metadata && session.user.user_metadata.full_name)
-               ? session.user.user_metadata.full_name
-               : session.user.email.split('@')[0],
-      mode:  (session.user.user_metadata && session.user.user_metadata.mode)
-               ? session.user.user_metadata.mode
-               : null
-    };
-  } catch(e) {
-    // Network error or Supabase down — let the app load in demo mode
-    window.__VELA_USER = null;
-  }
-  document.documentElement.style.visibility = 'visible';
+    setUser(session.user);
+    document.documentElement.style.visibility = 'visible';
+  });
+
+  // Fallback: if onAuthStateChange doesn't fire within 3s, check manually
+  // (can happen in some browsers with strict cookie settings)
+  setTimeout(function() {
+    if (resolved) return;
+    resolved = true;
+    _supabase.auth.getSession().then(function(result) {
+      var session = result && result.data && result.data.session;
+      if (!session) {
+        window.location.replace('/login');
+        return;
+      }
+      setUser(session.user);
+      document.documentElement.style.visibility = 'visible';
+    }).catch(function() {
+      // Supabase unreachable — show app in demo mode
+      window.__VELA_USER = null;
+      document.documentElement.style.visibility = 'visible';
+    });
+  }, 3000);
 })();
 </script>
 <div id="root"></div>
