@@ -311,52 +311,6 @@ textarea.finput{resize:vertical;min-height:80px}
   });
 })();
 </script>
-<script src="/auth-config.js"></script>
-<script>
-(function() {
-  // Demo mode — Supabase not configured, show app freely
-  if (!_supabase) {
-    window.__VELA_USER = null;
-    return;
-  }
-
-  document.documentElement.style.visibility = 'hidden';
-
-  function setUser(user) {
-    window.__VELA_USER = {
-      id:    user.id,
-      email: user.email,
-      name:  (user.user_metadata && user.user_metadata.full_name)
-               ? user.user_metadata.full_name
-               : user.email.split('@')[0],
-      mode:  (user.user_metadata && user.user_metadata.mode) || null
-    };
-    document.documentElement.style.visibility = 'visible';
-  }
-
-  // onAuthStateChange is the only reliable hook —
-  // it fires AFTER Supabase finishes writing the session to storage,
-  // whether arriving from login, signup, magic link, or a regular page load.
-  // getSession() can race; this cannot.
-  var unsub = _supabase.auth.onAuthStateChange(function(event, session) {
-    // SIGNED_IN fires on fresh login/signup
-    // INITIAL_SESSION fires on page load for returning users
-    // TOKEN_REFRESHED fires on token refresh
-    if (event === 'SIGNED_OUT') {
-      window.location.replace('/login');
-      return;
-    }
-    if (session) {
-      setUser(session.user);
-      return;
-    }
-    // No session on INITIAL_SESSION means not logged in
-    if (event === 'INITIAL_SESSION') {
-      window.location.replace('/login');
-    }
-  });
-})();
-</script>
 <div id="root"></div>
 <div class="toast" id="toast"></div>
 <script type="text/babel">
@@ -1872,25 +1826,26 @@ function App(){
     );
   }
 
-  // Render modals on top of app shell
-const modals=React.createElement(React.Fragment,null,
-  showModeToggle&&React.createElement(ModeToggleModal,{
-    currentMode:repo?.mode||mode,
-    onConfirm:(newMode)=>{
-      setRepo(r=>({...r,mode:newMode}));
-      setMode(newMode);
-      setBuilding(false);
-      setShowModeToggle(false);
-      showToast('Switched to '+newMode.toUpperCase()+' mode');
-    },
-    onClose:()=>setShowModeToggle(false)
-  }),
-  gmailAssets&&React.createElement(GmailModal,{
-    assets:gmailAssets,
-    onClose:()=>setGmailAssets(null)
-  })
-);
-if(building)return React.createElement(React.Fragment,null,modals,React.createElement('div',{className:'shell'},
+  // Single modals declaration — only once
+  const modals=React.createElement(React.Fragment,null,
+    showModeToggle&&React.createElement(ModeToggleModal,{
+      currentMode:repo?.mode||mode,
+      onConfirm:(newMode)=>{
+        setRepo(r=>({...r,mode:newMode}));
+        setMode(newMode);
+        setBuilding(false);
+        setShowModeToggle(false);
+        showToast('Switched to '+newMode.toUpperCase()+' mode');
+      },
+      onClose:()=>setShowModeToggle(false)
+    }),
+    gmailAssets&&React.createElement(GmailModal,{
+      assets:gmailAssets,
+      onClose:()=>setGmailAssets(null)
+    })
+  );
+
+  if(building)return React.createElement(React.Fragment,null,modals,React.createElement('div',{className:'shell'},
     React.createElement(Sidebar),
     React.createElement('div',{className:'main'},
       React.createElement('div',{className:'mhdr'},
@@ -1900,27 +1855,9 @@ if(building)return React.createElement(React.Fragment,null,modals,React.createEl
         React.createElement(CampaignBuilder,{repo,onSave:(c)=>{saveCampaign(c);setBuilding(false);setNav('library');},onBack:()=>{setBuilding(false);setNav('dashboard');},onGmailPush:(a)=>setGmailAssets(a)})
       )
     )
-  );
+  ));
 
-  // Render modals on top of app shell
-const modals=React.createElement(React.Fragment,null,
-  showModeToggle&&React.createElement(ModeToggleModal,{
-    currentMode:repo?.mode||mode,
-    onConfirm:(newMode)=>{
-      setRepo(r=>({...r,mode:newMode}));
-      setMode(newMode);
-      setBuilding(false);
-      setShowModeToggle(false);
-      showToast('Switched to '+newMode.toUpperCase()+' mode');
-    },
-    onClose:()=>setShowModeToggle(false)
-  }),
-  gmailAssets&&React.createElement(GmailModal,{
-    assets:gmailAssets,
-    onClose:()=>setGmailAssets(null)
-  })
-);
-return React.createElement(React.Fragment,null,modals,React.createElement('div',{className:'shell'},
+  return React.createElement(React.Fragment,null,modals,React.createElement('div',{className:'shell'},
     React.createElement(Sidebar),
     React.createElement('div',{className:'main'},
       React.createElement('div',{className:'mhdr'},
@@ -1941,7 +1878,7 @@ return React.createElement(React.Fragment,null,modals,React.createElement('div',
            {label:'Company',sub:repo?.company_name,action:()=>{setNav('repository');},btn:'Edit',primary:false},
            {label:'Reset demo',sub:'Return to mode selection',action:()=>{setScreen('mode');setMode(null);setRepo(null);setCampaigns([]);setBuilding(false);setNav('dashboard');},btn:'Reset',primary:false},
            {label:'Sign out',sub:'End your session and return to login',action:()=>{try{if(window._supabase){window._supabase.auth.signOut().then(function(){window.location.href='/login';});}else{window.location.href='/login';}}catch(e){window.location.href='/login';}},btn:'Sign out',primary:false}
-          ].map((r,i)=>React.createElement('div',{key:i,style:{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'13px 0',borderBottom:i<3?'1px solid var(--border)':'none'}},
+          ].map((r,i)=>React.createElement('div',{key:i,style:{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'13px 0',borderBottom:i<4?'1px solid var(--border)':'none'}},
             React.createElement('div',null,React.createElement('div',{style:{fontSize:13,fontWeight:600}},r.label),React.createElement('div',{style:{fontSize:12,color:'var(--t3)'}},r.sub)),
             React.createElement('button',{className:`btn bsm ${r.primary?'bp':'bo'}`,onClick:r.action,disabled:r.btn==='Locked'},r.btn)
           ))
