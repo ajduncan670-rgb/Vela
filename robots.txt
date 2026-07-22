@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+
+# App should not be indexed (no auth yet)
+Disallow: /app/
+
+Sitemap: https://getvela.io/sitemap.xml

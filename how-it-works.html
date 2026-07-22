@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How It Works — Vela</title>
+<style>
+/* ═══════════════════════════════════════════════════
+   VELA DESIGN SYSTEM — Shared across all pages
+   Saffron palette · Inter typeface · Warm off-white
+═══════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+/* ── RESET ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; font-size: 16px; }
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: inherit; text-decoration: none; }
+button { cursor: pointer; font-family: inherit; }
+img { display: block; max-width: 100%; }
+ul { list-style: none; }
+
+/* ── TOKENS ── */
+:root {
+  --bg:          #FAF8F4;
+  --bg2:         #F3F0EB;
+  --bg3:         #EEEBE5;
+  --white:       #FFFFFF;
+  --border:      rgba(0,0,0,0.08);
+  --border2:     rgba(0,0,0,0.13);
+  --text:        #1C1B19;
+  --text2:       #666460;
+  --text3:       #AAAAAA;
+  --accent:      #E8960C;
+  --accent-d:    #C97E08;
+  --accent-bg:   #FEF3DB;
+  --accent-bdr:  #F5D98A;
+  --accent-txt:  #92600A;
+  --green:       #2A9D5C;
+  --green-bg:    #E8F5EE;
+  --green-bdr:   #A8D5BD;
+  --green-txt:   #1A6B3C;
+  --blue-bg:     #EFF4FE;
+  --blue-bdr:    #BFCFFB;
+  --blue-txt:    #1A3A8F;
+  --nav-h:       60px;
+  --max-w:       1100px;
+  --radius:      12px;
+}
+
+/* ── NAV ── */
+#nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 48px; height: var(--nav-h);
+  background: rgba(250,248,244,0.92);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--border);
+  transition: box-shadow .2s;
+}
+#nav.scrolled { box-shadow: 0 2px 20px rgba(0,0,0,0.06); }
+.nav-logo {
+  display: flex; align-items: center; gap: 9px;
+  font-size: 16px; font-weight: 800; letter-spacing: -.4px;
+  color: var(--text);
+}
+.nav-logo-mark {
+  width: 26px; height: 26px; background: var(--accent);
+  border-radius: 6px; display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.nav-links {
+  display: flex; align-items: center; gap: 32px;
+}
+.nav-links a {
+  font-size: 13px; color: var(--text2);
+  transition: color .15s;
+}
+.nav-links a:hover, .nav-links a.active { color: var(--text); }
+.nav-actions { display: flex; align-items: center; gap: 8px; }
+
+/* ── BUTTONS ── */
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: inherit; font-weight: 600; border: none;
+  border-radius: 8px; cursor: pointer;
+  transition: all .15s; white-space: nowrap;
+  text-decoration: none; line-height: 1;
+}
+.btn-primary { background: var(--accent); color: #fff; font-size: 14px; padding: 10px 22px; }
+.btn-primary:hover { background: var(--accent-d); transform: translateY(-1px); }
+.btn-primary.lg { font-size: 15px; padding: 13px 28px; border-radius: 9px; }
+.btn-outline {
+  background: var(--white); color: var(--text2);
+  font-size: 14px; padding: 10px 22px;
+  border: 1px solid var(--border2);
+}
+.btn-outline:hover { border-color: rgba(0,0,0,.25); color: var(--text); }
+.btn-outline.lg { font-size: 15px; padding: 13px 28px; border-radius: 9px; }
+.btn-ghost {
+  background: transparent; color: var(--text2);
+  font-size: 13px; padding: 7px 14px; font-weight: 500; border: none;
+}
+.btn-ghost:hover { background: rgba(0,0,0,.05); color: var(--text); }
+.btn-sm { font-size: 12px; padding: 6px 14px; border-radius: 6px; }
+
+/* ── LAYOUT ── */
+.wrap { max-width: var(--max-w); margin: 0 auto; padding: 0 48px; }
+.section { padding: 88px 0; }
+.section-sm { padding: 64px 0; }
+.pt-nav { padding-top: calc(var(--nav-h) + 40px); }
+.divider { height: 1px; background: var(--border); }
+
+/* ── TYPOGRAPHY ── */
+.eyebrow {
+  font-size: 11px; font-weight: 700; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--accent); margin-bottom: 12px;
+}
+.section-title {
+  font-size: clamp(26px, 3.5vw, 42px); font-weight: 800;
+  letter-spacing: -1.2px; line-height: 1.06; color: var(--text);
+  margin-bottom: 14px;
+}
+.section-sub {
+  font-size: 16px; color: var(--text2); line-height: 1.7;
+  max-width: 520px; margin-bottom: 52px;
+}
+.centered { text-align: center; }
+.centered .section-sub { margin-left: auto; margin-right: auto; }
+
+/* ── CARDS ── */
+.card {
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 24px;
+}
+.card-hover { transition: border-color .2s, box-shadow .2s; }
+.card-hover:hover {
+  border-color: var(--accent-bdr);
+  box-shadow: 0 4px 24px rgba(232,150,12,.08);
+}
+
+/* ── GRID UTILITIES ── */
+.g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.g3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; }
+.g4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; }
+.bento { display: grid; grid-template-columns: repeat(12,1fr); gap: 12px; }
+.b7 { grid-column: span 7; }
+.b5 { grid-column: span 5; }
+.b4 { grid-column: span 4; }
+
+/* ── TAGS / PILLS ── */
+.tag {
+  display: inline-block; padding: 3px 10px; border-radius: 20px;
+  font-size: 11px; font-weight: 500; margin: 2px 2px 2px 0;
+}
+.tag-a { background: var(--accent-bg); color: var(--accent-txt); border: 1px solid var(--accent-bdr); }
+.tag-g { background: var(--green-bg); color: var(--green-txt); border: 1px solid var(--green-bdr); }
+.tag-b { background: var(--blue-bg); color: var(--blue-txt); border: 1px solid var(--blue-bdr); }
+.tag-n { background: var(--bg2); color: var(--text2); border: 1px solid var(--border2); }
+
+/* ── ICONS (SVG inline containers) ── */
+.icon-box {
+  width: 40px; height: 40px; background: var(--accent-bg);
+  border: 1px solid var(--accent-bdr); border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.icon-box svg { width: 18px; height: 18px; }
+.icon-box.lg { width: 48px; height: 48px; border-radius: 11px; }
+.icon-box.lg svg { width: 22px; height: 22px; }
+
+/* ── PROOF BAR ── */
+.proof-bar {
+  background: var(--white);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 18px 0;
+}
+.proof-inner {
+  max-width: var(--max-w); margin: 0 auto; padding: 0 48px;
+  display: flex; gap: 0; justify-content: center; flex-wrap: wrap;
+}
+.proof-item {
+  font-size: 12px; color: var(--text3);
+  display: flex; align-items: center; gap: 8px;
+  padding: 5px 28px; border-right: 1px solid var(--border);
+}
+.proof-item:last-child { border-right: none; }
+.proof-item strong { color: var(--text2); font-weight: 500; }
+
+/* ── STEP NUMBERS ── */
+.step-num {
+  font-size: 11px; font-weight: 700;
+  color: var(--accent); letter-spacing: .04em; margin-bottom: 16px;
+}
+
+/* ── HEALTH BARS ── */
+.hrow { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.hlabel { font-size: 12px; color: var(--text2); min-width: 110px; }
+.hbg { flex: 1; height: 4px; background: var(--bg3); border-radius: 2px; }
+.hfill { height: 4px; border-radius: 2px; background: var(--accent); }
+.hval { font-size: 11px; color: var(--text3); min-width: 30px; text-align: right; }
+
+/* ── TESTIMONIALS ── */
+.testi-quote {
+  font-size: 14px; color: var(--text2); line-height: 1.75;
+  margin-bottom: 18px; font-style: italic;
+}
+.testi-author { display: flex; align-items: center; gap: 10px; }
+.testi-avatar {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: var(--accent-bg); border: 1px solid var(--accent-bdr);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; color: var(--accent-txt); flex-shrink: 0;
+}
+.testi-name { font-size: 13px; font-weight: 600; color: var(--text); }
+.testi-role { font-size: 11px; color: var(--text3); }
+
+/* ── PRICING CARDS ── */
+.price-card {
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 26px 22px;
+  display: flex; flex-direction: column; position: relative;
+  transition: border-color .2s;
+}
+.price-card:hover { border-color: var(--border2); }
+.price-card.featured {
+  border-color: var(--accent-bdr);
+  background: linear-gradient(160deg, var(--accent-bg) 0%, var(--white) 48%);
+}
+.price-popular {
+  position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
+  background: var(--accent); color: #fff; font-size: 10px; font-weight: 700;
+  padding: 3px 12px; border-radius: 20px; white-space: nowrap; letter-spacing: .04em;
+}
+.price-tier {
+  font-size: 11px; font-weight: 700; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--text2); margin-bottom: 10px;
+}
+.price-amount {
+  font-size: 34px; font-weight: 800; color: var(--text);
+  letter-spacing: -1.5px; line-height: 1; margin-bottom: 4px;
+}
+.price-amount span { font-size: 14px; font-weight: 400; color: var(--text3); letter-spacing: 0; }
+.price-desc {
+  font-size: 12px; color: var(--text2); line-height: 1.55;
+  margin-bottom: 18px; padding-bottom: 18px;
+  border-bottom: 1px solid var(--border); min-height: 42px;
+}
+.price-features { list-style: none; display: flex; flex-direction: column; gap: 8px; margin-bottom: 22px; flex: 1; }
+.pf { display: flex; align-items: flex-start; gap: 7px; font-size: 12px; color: var(--text2); line-height: 1.4; }
+.pf-check { color: var(--accent); flex-shrink: 0; font-weight: 700; font-size: 14px; margin-top: -1px; }
+.pf.dim { color: var(--text3); }
+.pf.dim .pf-check { color: var(--text3); }
+
+/* ── CTA SECTION ── */
+.cta-inner {
+  background: linear-gradient(135deg, var(--accent-bg) 0%, var(--white) 60%);
+  border: 1px solid var(--accent-bdr); border-radius: 20px;
+  padding: 68px 48px; text-align: center;
+}
+.cta-h2 {
+  font-size: clamp(26px, 3.5vw, 42px); font-weight: 800;
+  letter-spacing: -1.2px; color: var(--text); margin-bottom: 12px;
+}
+.cta-sub { font-size: 16px; color: var(--text2); margin-bottom: 32px; }
+.cta-actions { display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; }
+
+/* ── FOOTER ── */
+footer {
+  border-top: 1px solid var(--border);
+  background: var(--bg2); padding: 48px 0 28px;
+}
+.footer-inner {
+  display: grid; grid-template-columns: 220px repeat(4,1fr);
+  gap: 40px; margin-bottom: 36px;
+}
+.footer-logo {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 15px; font-weight: 800; color: var(--text);
+  margin-bottom: 8px;
+}
+.footer-desc { font-size: 12px; color: var(--text3); line-height: 1.65; }
+.footer-col-title {
+  font-size: 10px; font-weight: 700; letter-spacing: .09em;
+  text-transform: uppercase; color: var(--text3); margin-bottom: 14px;
+}
+.footer-links { display: flex; flex-direction: column; gap: 9px; }
+.footer-links a { font-size: 13px; color: var(--text3); transition: color .15s; }
+.footer-links a:hover { color: var(--text2); }
+.footer-bottom {
+  display: flex; align-items: center; justify-content: space-between;
+  padding-top: 22px; border-top: 1px solid var(--border);
+  font-size: 12px; color: var(--text3); flex-wrap: wrap; gap: 8px;
+}
+
+/* ── CHANNEL PILLS ── */
+.ch-pill {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 12px; color: var(--text2); background: var(--bg);
+  border: 1px solid var(--border); border-radius: 20px; padding: 4px 11px;
+}
+.ch-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--green); }
+.ch-dot.soon { background: var(--text3); }
+
+/* ── FEATURE MATRIX TABLE ── */
+.matrix { width: 100%; border-collapse: collapse; font-size: 13px; }
+.matrix th {
+  text-align: center; padding: 12px 14px;
+  font-size: 11px; font-weight: 700; letter-spacing: .07em;
+  text-transform: uppercase; color: var(--text2);
+  border-bottom: 2px solid var(--border); background: var(--bg);
+}
+.matrix th:first-child { text-align: left; }
+.matrix td {
+  padding: 11px 14px; border-bottom: 1px solid var(--border);
+  text-align: center; color: var(--text2); vertical-align: middle;
+}
+.matrix td:first-child { text-align: left; font-weight: 500; color: var(--text); }
+.matrix tr:nth-child(even) td { background: rgba(0,0,0,.015); }
+.matrix .yes { color: var(--accent); font-weight: 700; font-size: 16px; }
+.matrix .no { color: var(--text3); font-size: 16px; }
+.matrix .partial { color: var(--accent-txt); font-size: 12px; font-weight: 600; }
+.matrix-section td {
+  background: var(--bg2); font-size: 10px; font-weight: 700;
+  letter-spacing: .08em; text-transform: uppercase;
+  color: var(--text3); padding: 8px 14px; border-bottom: none;
+}
+
+/* ── FAQ ── */
+.faq-item { border-bottom: 1px solid var(--border); }
+.faq-q {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 0; cursor: pointer; font-size: 15px; font-weight: 600;
+  color: var(--text); gap: 14px;
+}
+.faq-q:hover { color: var(--accent-txt); }
+.faq-icon {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: var(--bg2); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; font-size: 14px; color: var(--text2);
+  transition: all .2s;
+}
+.faq-a {
+  font-size: 14px; color: var(--text2); line-height: 1.7;
+  padding-bottom: 18px; display: none;
+}
+.faq-item.open .faq-a { display: block; }
+.faq-item.open .faq-icon { background: var(--accent-bg); border-color: var(--accent-bdr); color: var(--accent-txt); transform: rotate(45deg); }
+
+/* ── PAGE HERO VARIANTS ── */
+.page-hero {
+  padding: calc(var(--nav-h) + 64px) 0 72px;
+  text-align: center;
+}
+.page-hero h1 {
+  font-size: clamp(36px, 5vw, 60px); font-weight: 800;
+  letter-spacing: -2px; line-height: 1.04; color: var(--text);
+  margin-bottom: 20px;
+}
+.page-hero h1 em { font-style: normal; color: var(--accent); }
+.page-hero p {
+  font-size: 17px; color: var(--text2); line-height: 1.7;
+  max-width: 540px; margin: 0 auto 36px;
+}
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--accent-bg); border: 1px solid var(--accent-bdr);
+  color: var(--accent-txt); font-size: 12px; font-weight: 500;
+  padding: 5px 13px; border-radius: 20px; margin-bottom: 24px;
+}
+.hero-badge-dot {
+  width: 6px; height: 6px; background: var(--accent); border-radius: 50%;
+  animation: pulse 2s ease-in-out infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(.8)} }
+
+/* ── BREADCRUMB ── */
+.breadcrumb {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; color: var(--text3); margin-bottom: 40px;
+}
+.breadcrumb a { color: var(--text3); transition: color .15s; }
+.breadcrumb a:hover { color: var(--text2); }
+.breadcrumb-sep { color: var(--text3); }
+
+/* ── LEGAL PAGE ── */
+.legal-body { max-width: 740px; margin: 0 auto; }
+.legal-body h2 { font-size: 18px; font-weight: 700; color: var(--text); margin: 36px 0 10px; }
+.legal-body h3 { font-size: 15px; font-weight: 600; color: var(--text); margin: 24px 0 8px; }
+.legal-body p { font-size: 14px; color: var(--text2); line-height: 1.75; margin-bottom: 14px; }
+.legal-body ul { margin: 8px 0 14px 20px; }
+.legal-body ul li { font-size: 14px; color: var(--text2); line-height: 1.7; margin-bottom: 6px; list-style: disc; }
+.legal-meta { font-size: 12px; color: var(--text3); margin-bottom: 36px; }
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fade-up { animation: fadeUp .4s ease both; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 960px) {
+  #nav { padding: 0 20px; }
+  .nav-links { display: none; }
+  .wrap { padding: 0 20px; }
+  .proof-inner { padding: 0 20px; gap: 16px; }
+  .proof-item { padding: 5px 14px; }
+  .g2, .g3, .g4 { grid-template-columns: 1fr; }
+  .b7, .b5, .b4 { grid-column: span 12; }
+  .footer-inner { grid-template-columns: 1fr 1fr; }
+  .cta-inner { padding: 48px 24px; }
+  .page-hero { padding: calc(var(--nav-h) + 40px) 0 52px; }
+}
+@media (max-width: 640px) {
+  .footer-inner { grid-template-columns: 1fr; }
+  .g4 { grid-template-columns: 1fr 1fr; }
+  .pricing-grid { grid-template-columns: 1fr; }
+}
+
+</style>
+<style>
+.hiw-step{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center;padding:56px 0;border-bottom:1px solid var(--border);}
+.hiw-step:last-child{border-bottom:none;}
+.hiw-step.flip{direction:rtl;}
+.hiw-step.flip>*{direction:ltr;}
+.hiw-step-label{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:10px;}
+.hiw-step-title{font-size:clamp(22px,2.8vw,32px);font-weight:800;letter-spacing:-.8px;color:var(--text);margin-bottom:12px;line-height:1.1;}
+.hiw-step-desc{font-size:15px;color:var(--text2);line-height:1.7;margin-bottom:20px;}
+.hiw-step-points{display:flex;flex-direction:column;gap:10px;}
+.hiw-point{display:flex;align-items:flex-start;gap:10px;font-size:13px;color:var(--text2);line-height:1.55;}
+.hiw-point-dot{width:18px;height:18px;background:var(--accent-bg);border:1px solid var(--accent-bdr);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.hiw-point-dot svg{width:9px;height:9px;}
+/* Screen mockups */
+.screen{background:var(--white);border:1px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.07);}
+.screen-bar{background:var(--bg2);border-bottom:1px solid var(--border);padding:10px 14px;display:flex;align-items:center;gap:6px;}
+.screen-dot{width:8px;height:8px;border-radius:50%;}
+.screen-body{padding:16px;}
+.q-item{margin-bottom:14px;}
+.q-label{font-size:11px;font-weight:600;color:var(--text);margin-bottom:4px;}
+.q-input{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:8px 11px;font-size:12px;color:var(--text2);width:100%;}
+.q-input.focused{border-color:var(--accent);background:var(--white);}
+.chip-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;}
+.chip-small{padding:4px 11px;border-radius:20px;font-size:11px;font-weight:500;border:1px solid var(--border2);background:var(--white);color:var(--text2);}
+.chip-small.sel{background:var(--accent-bg);border-color:var(--accent-bdr);color:var(--accent-txt);}
+.repo-card{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:8px;}
+.repo-card-title{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text3);margin-bottom:8px;}
+.repo-field{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:11px;}
+.repo-field:last-child{border-bottom:none;}
+.rf-label{color:var(--text3);}
+.rf-val{color:var(--text);font-weight:500;max-width:60%;text-align:right;}
+.pipe-stages{display:flex;gap:0;}
+.pipe-stage{flex:1;padding:10px 12px;background:var(--bg2);border:1px solid var(--border);border-right:none;text-align:center;}
+.pipe-stage:last-child{border-right:1px solid var(--border);}
+.pipe-stage:first-child{border-radius:7px 0 0 7px;}
+.pipe-stage:last-child{border-radius:0 7px 7px 0;}
+.pipe-stage.active{background:var(--accent-bg);border-color:var(--accent-bdr);}
+.pipe-s-label{font-size:10px;font-weight:600;color:var(--text3);}
+.pipe-stage.active .pipe-s-label{color:var(--accent-txt);}
+.out-email{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:8px;}
+.out-subj{font-size:12px;font-weight:600;color:var(--text);margin-bottom:5px;}
+.out-body{font-size:11px;color:var(--text2);line-height:1.65;}
+.out-actions{display:flex;gap:6px;margin-top:10px;}
+.out-btn{font-size:10px;font-weight:500;color:var(--accent-txt);background:var(--accent-bg);border:1px solid var(--accent-bdr);border-radius:4px;padding:3px 9px;}
+.out-btn.ghost{background:var(--bg2);color:var(--text2);border-color:var(--border);}
+@media(max-width:960px){.hiw-step{grid-template-columns:1fr;gap:32px;}.hiw-step.flip{direction:ltr;}}
+</style>
+</head>
+<body>
+
+<nav id="nav">
+  <a href="/" class="nav-logo"><div class="nav-logo-mark"><svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M7 1L13 7L7 13L1 7L7 1Z" fill="white"/></svg></div>Vela</a>
+  <ul class="nav-links">
+    <li><a href="how-it-works" class="active">How it works</a></li>
+    <li><a href="features">Features</a></li>
+    <li><a href="who-its-for">Who it's for</a></li>
+    <li><a href="pricing">Pricing</a></li>
+    <li><a href="about">About</a></li>
+  </ul>
+  <div class="nav-actions"><a href="login" class="btn btn-ghost">Log in</a><a href="signup" class="btn btn-primary btn-sm">Start free</a></div>
+</nav>
+
+<!-- HERO -->
+<div class="page-hero">
+  <div class="wrap centered">
+    <p class="eyebrow">How it works</p>
+    <h1>From zero context to<br><em>deployed campaign</em><br>in under 10 minutes.</h1>
+    <p>Three layers working together: a repository that knows your business, an agent that knows how to write for it, and a pipeline that takes campaigns from brief to production ready.</p>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- STEPS -->
+<section class="section">
+  <div class="wrap">
+
+    <!-- Step 1 -->
+    <div class="hiw-step">
+      <div>
+        <div class="hiw-step-label">Step one</div>
+        <div class="hiw-step-title">Build your brand repository</div>
+        <p class="hiw-step-desc">Most AI tools start from zero every time. Vela starts from everything you've already told it. Your repository is the persistent knowledge layer that makes every campaign contextually accurate from day one.</p>
+        <div class="hiw-step-points">
+          <div class="hiw-point"><div class="hiw-point-dot"><svg viewBox="0 0 9 9" fill="none"><path d="M1.5 4.5L3.5 6.5L7.5 2.5" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round"/></svg></div>Answer five plain-language questions about your company, audience, and voice. Takes under 5 minutes.</div>
+          <div class="hiw-point"><div class="hiw-point-dot"><svg viewBox="0 0 9 9" fill="none"><path d="M1.5 4.5L3.5 6.5L7.5 2.5" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round"/></svg></div>Upload your brand guide, product docs, and past campaigns on Solo+. Vela extracts structured context automatically.</div>
+          <div class="hiw-point"><div class="hiw-point-dot"><svg viewBox="0 0 9 9" fill="none"><path d="M1.5 4.5L3.5 6.5L7.5 2.5" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round"/></svg></div>Set guardrails — words to never use, required disclaimers, regulatory context. Your agent respects them on every output.</div>
+          <div class="hiw-point"><div class="hiw-point-dot"><svg viewBox="0 0 9 9" fill="none"><path d="M1.5 4.5L3.5 6.5L7.5 2.5" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round"/></svg></div>Review what was extracted. A health score shows what's strong and what to add next.</div>
+        </div>
+      </div>
+      <!-- Onboarding mockup -->
+      <div class="screen">
+        <div class="screen-bar"><div class="screen-dot" style="background:#FF5F56"></div><div class="screen-dot" style="background:#FFBD2E"></div><div class="screen-dot" style="background:#27C93F"></div></div>
+        <div class="screen-body">
+          <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:14px">Tell us about your business</div>
+          <div class="q-item"><div class="q-label">Company name</div><div class="q-input focused">NovaPay</div></div>
+          <div class="q-item"><div class="q-label">What do you do?</div><div class="q-input" style="height:54px;display:flex;align-items:flex-start;padding-top:8px">We help finance teams automate AP/AR and eliminate manual reconciliation...</div></div>
+          <div class="q-item">
+            <div class="q-label">Brand voice</div>
+            <div class="chip-row">
+              <div class="chip-small sel">Direct</div><div class="chip-small sel">Technical</div><div class="chip-small">Conversational</div><div class="chip-small">Bold</div>
+            </div>
+          </div>
+          <div style="margin-top:14px;padding:10px 12px;background:var(--accent-bg);border:1px solid var(--accent-bdr);border-radius:8px">
+            <div style="font-size:11px;font-weight:600;color:var(--accent-txt);margin-bottom:8px">Repository health — live preview</div>
+            <div class="hrow"><span class="hlabel" style="color:var(--accent-txt);min-width:90px">Brand voice</span><div class="hbg" style="background:rgba(232,150,12,.2)"><div class="hfill" style="width:90%"></div></div><span class="hval" style="color:var(--accent-txt)">90%</span></div>
+            <div class="hrow"><span class="hlabel" style="color:var(--accent-txt);min-width:90px">Company</span><div class="hbg" style="background:rgba(232,150,12,.2)"><div class="hfill" style="width:75%"></div></div><span class="hval" style="color:var(--accent-txt)">75%</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 2 -->
+    <div class="hiw-step flip">
+      <div>
+        <div class="hiw-step-label">Step two</div>
+        <div class="hiw-step-title">Your agent gets configured automatically</div>
+        <p class="hiw-step-desc">Once your repository is built, Vela configures a dedicated AI agent for your account. This agent knows your brand voice, your product, your buyers, and your compliance rules before you write a single brief.</p>
+        <div class="hiw-step-points">
+          <div class="hiw-point"><div class="hiw-point-dot"><svg viewBox="0 0 9 9" fill="none"><path d="M1.5 4.5L3.5 6.5L7.5 2.5" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round"/></svg></div>One dedicated agent per account on Free and Solo. Three configurations on Team. Custom on Enterprise.</div>
+          <div class="hiw-point"><div class="hiw-point-dot"><svg viewBox="0 0 9 9" fill="none"><path d="M1.5 4.5L3.5 6.5L7.5 2.5" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round"/></svg></div>Each agent is function-specific — an email agent knows email conventions, a LinkedIn agent knows what performs on LinkedIn.</div>
+          <div class="hiw-point"><div class="hiw-point-dot"><svg viewBox="0 0 9 9" fill="none"><path d="M1.5 4.5L3.5 6.5L7.5 2.5" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round"/></svg></div>All agents share the same repository — one source of truth for every channel.</div>
+        </div>
+      </div>
+      <!-- Repository mockup -->
+      <div class="screen">
+        <div class="screen-bar"><div class="screen-dot" style="background:#FF5F56"></div><div class="screen-dot" style="background:#FFBD2E"></div><div class="screen-dot" style="background:#27C93F"></div></div>
+        <div class="screen-body">
+          <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:12px">NovaPay Marketing Agent</div>
+          <div class="repo-card">
+            <div class="repo-card-title">Company</div>
+            <div class="repo-field"><span class="rf-label">Name</span><span class="rf-val">NovaPay</span></div>
+            <div class="repo-field"><span class="rf-label">Industry</span><span class="rf-val">Fintech / Payments</span></div>
+            <div class="repo-field"><span class="rf-label">Voice</span><span class="rf-val">Direct, technical</span></div>
+          </div>
+          <div class="repo-card">
+            <div class="repo-card-title">Persona</div>
+            <div class="repo-field"><span class="rf-label">Title</span><span class="rf-val">VP Finance / CFO</span></div>
+            <div class="repo-field"><span class="rf-label">Pain</span><span class="rf-val">Manual reconciliation, no real-time cash view</span></div>
+          </div>
+          <div class="repo-card">
+            <div class="repo-card-title">Guardrails active</div>
+            <div class="repo-field"><span class="rf-label">Avoid</span><span class="rf-val" style="color:var(--accent-txt)">"revolutionary, game-changing"</span></div>
+            <div class="repo-field"><span class="rf-label">Status</span><span class="rf-val" style="color:var(--green-txt)">3 rules enforced</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 3 -->
+    <div class="hiw-step">
+      <div>
+        <div class="hiw-step-label">Step three</div>
+        <div class="hiw-step-title">Brief, generate, and deploy in minutes</div>
+        <p class="hiw-step-desc">Select your campaign type and channel. Add any specific context for this campaign. Hit Generate. Your agent produces a complete, contextually accurate campaign package — grounded in your repository, ready to deploy.</p>
+        <div class="hiw-step-points">
+          <div class="hiw-point"><div class="hiw-point-dot"><svg viewBox="0 0 9 9" fill="none"><path d="M1.5 4.5L3.5 6.5L7.5 2.5" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round"/></svg></div>8 campaign types: product launch, lead nurture, events, thought leadership, re-engagement, and more.</div>
+          <div class="hiw-point"><div class="hiw-point-dot"><svg viewBox="0 0 9 9" fill="none"><path d="M1.5 4.5L3.5 6.5L7.5 2.5" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round"/></svg></div>4 channels: email sequences, LinkedIn posts, landing page copy, sales battlecards.</div>
+          <div class="hiw-point"><div class="hiw-point-dot"><svg viewBox="0 0 9 9" fill="none"><path d="M1.5 4.5L3.5 6.5L7.5 2.5" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round"/></svg></div>Edit inline, copy to clipboard, or push directly to Gmail. Every campaign saves to your library automatically.</div>
+          <div class="hiw-point"><div class="hiw-point-dot"><svg viewBox="0 0 9 9" fill="none"><path d="M1.5 4.5L3.5 6.5L7.5 2.5" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round"/></svg></div>On Team+, campaigns move through a structured pipeline — Brief, Generate, Review, Deploy — with the full output package saved at every stage.</div>
+        </div>
+      </div>
+      <!-- Campaign output mockup -->
+      <div class="screen">
+        <div class="screen-bar"><div class="screen-dot" style="background:#FF5F56"></div><div class="screen-dot" style="background:#FFBD2E"></div><div class="screen-dot" style="background:#27C93F"></div></div>
+        <div class="screen-body">
+          <div style="margin-bottom:12px">
+            <div class="pipe-stages">
+              <div class="pipe-stage active"><div class="pipe-s-label">Brief</div></div>
+              <div class="pipe-stage"><div class="pipe-s-label">Generate</div></div>
+              <div class="pipe-stage"><div class="pipe-s-label">Review</div></div>
+              <div class="pipe-stage"><div class="pipe-s-label">Deploy</div></div>
+            </div>
+          </div>
+          <div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:8px">Campaign type: Product launch &nbsp;·&nbsp; Channel: Email sequence</div>
+          <div class="out-email">
+            <div class="out-subj">Subject: FedNow is live — your 90-day window is closing</div>
+            <div class="out-body">37% of banks said they'd be FedNow-ready by end of 2024. If your institution is in the other 63%, the window before commercial clients start asking questions is getting shorter than you think...</div>
+            <div class="out-actions">
+              <div class="out-btn">Push to Gmail</div>
+              <div class="out-btn ghost">Copy</div>
+              <div class="out-btn ghost">Edit</div>
+            </div>
+          </div>
+          <div style="font-size:11px;color:var(--text3);text-align:center;padding:4px 0">Email 1 of 3 &nbsp;·&nbsp; Saved to library</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- THE LOOP -->
+<section class="section">
+  <div class="wrap centered">
+    <div class="eyebrow">The compounding advantage</div>
+    <div class="section-title">Gets better every campaign you run</div>
+    <p class="section-sub" style="margin-left:auto;margin-right:auto">Every edit you make, every campaign you mark as deployed, every output you rate teaches your agent what good looks like for your brand specifically. After 90 days, the quality gap over any generic tool is significant and growing.</p>
+    <div class="g3" style="text-align:left;margin-top:0">
+      <div class="card">
+        <div style="font-size:28px;font-weight:800;color:var(--accent);letter-spacing:-1px;margin-bottom:4px">Day 1</div>
+        <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:8px">Good output from your first brief</div>
+        <p style="font-size:13px;color:var(--text2);line-height:1.6">Your repository answers and voice chips give the agent enough to produce accurate, on-brand campaigns from the first generation. Better than anything you'd get from a blank ChatGPT prompt.</p>
+      </div>
+      <div class="card">
+        <div style="font-size:28px;font-weight:800;color:var(--accent);letter-spacing:-1px;margin-bottom:4px">Day 30</div>
+        <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:8px">Agent learning from your edits</div>
+        <p style="font-size:13px;color:var(--text2);line-height:1.6">Every inline edit you've made — changing "enterprise clients" to "bank partners," shortening calls to action, adjusting tone on specific campaign types — becomes part of your agent's institutional memory.</p>
+      </div>
+      <div class="card">
+        <div style="font-size:28px;font-weight:800;color:var(--accent);letter-spacing:-1px;margin-bottom:4px">Day 90+</div>
+        <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:8px">A proprietary asset that compounds</div>
+        <p style="font-size:13px;color:var(--text2);line-height:1.6">Your repository is now a unique, proprietary asset that reflects your brand's actual history, not just your onboarding answers. No competitor's tool can replicate this without starting from scratch.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="section-sm">
+  <div class="wrap">
+    <div class="cta-inner">
+      <h2 class="cta-h2">Ready to build your agent?</h2>
+      <p class="cta-sub">Start with 5 free campaigns. No card, no commitment. See what it produces for your business before spending anything.</p>
+      <div class="cta-actions">
+        <a href="signup" class="btn btn-primary lg">Build your agent free</a>
+        <a href="pricing" class="btn btn-outline lg">View pricing</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="footer-inner">
+      <div><div class="footer-logo"><div class="nav-logo-mark"><svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M7 1L13 7L7 13L1 7L7 1Z" fill="white"/></svg></div>Vela</div><p class="footer-desc">AI demand gen for B2B and B2C marketing teams.</p></div>
+      <div><div class="footer-col-title">Product</div><ul class="footer-links"><li><a href="how-it-works">How it works</a></li><li><a href="features">Features</a></li><li><a href="pricing">Pricing</a></li></ul></div>
+      <div><div class="footer-col-title">For teams</div><ul class="footer-links"><li><a href="who-its-for">Who it's for</a></li></ul></div>
+      <div><div class="footer-col-title">Company</div><ul class="footer-links"><li><a href="about">About</a></li></ul></div>
+      <div><div class="footer-col-title">Legal</div><ul class="footer-links"><li><a href="privacy">Privacy</a></li><li><a href="terms">Terms</a></li><li><a href="security">Security</a></li></ul></div>
+    </div>
+    <div class="footer-bottom"><span>© 2026 Vela. All rights reserved.</span></div>
+  </div>
+</footer>
+<script>window.addEventListener('scroll',function(){document.getElementById('nav').classList.toggle('scrolled',window.scrollY>10);},{passive:true});</script>
+</body>
+</html>

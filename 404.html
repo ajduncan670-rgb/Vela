@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Page not found — Vela</title>
+<meta name="description" content="This page doesn't exist. Return to the Vela homepage.">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:#FAF8F4;color:#1C1B19;line-height:1.6;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}button{cursor:pointer;font-family:inherit}img{display:block;max-width:100%}ul{list-style:none}
+:root{
+  --bg:#FAF8F4;--bg2:#F3F0EB;--bg3:#EEEBE5;--white:#FFFFFF;
+  --border:rgba(0,0,0,0.08);--border2:rgba(0,0,0,0.13);
+  --text:#1C1B19;--text2:#666460;--text3:#AAAAAA;
+  --accent:#E8960C;--accent-d:#C97E08;--accent-bg:#FEF3DB;--accent-bdr:#F5D98A;--accent-txt:#92600A;
+  --green:#2A9D5C;--green-bg:#E8F5EE;--green-bdr:#A8D5BD;--green-txt:#1A6B3C;
+  --blue-bg:#EFF4FE;--blue-bdr:#BFCFFB;--blue-txt:#1A3A8F;
+  --nav-h:60px;--max-w:1100px;--radius:12px;
+}
+#nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:center;justify-content:space-between;padding:0 48px;height:var(--nav-h);background:rgba(250,248,244,0.92);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);transition:box-shadow .2s}
+#nav.scrolled{box-shadow:0 2px 20px rgba(0,0,0,0.06)}
+.nav-logo{display:flex;align-items:center;gap:9px;font-size:16px;font-weight:800;letter-spacing:-.4px;color:var(--text)}
+.nav-logo-mark{width:26px;height:26px;background:var(--accent);border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.nav-links{display:flex;align-items:center;gap:32px}
+.nav-links a{font-size:13px;color:var(--text2);transition:color .15s}
+.nav-links a:hover,.nav-links a.active{color:var(--text)}
+.nav-actions{display:flex;align-items:center;gap:8px}
+.btn{display:inline-flex;align-items:center;gap:6px;font-family:inherit;font-weight:600;border:none;border-radius:8px;cursor:pointer;transition:all .15s;white-space:nowrap;text-decoration:none;line-height:1}
+.btn-primary{background:var(--accent);color:#fff;font-size:14px;padding:10px 22px}
+.btn-primary:hover{background:var(--accent-d);transform:translateY(-1px)}
+.btn-primary.lg{font-size:15px;padding:13px 28px;border-radius:9px}
+.btn-ghost{background:transparent;color:var(--text2);font-size:13px;padding:7px 14px;font-weight:500;border:none}
+.btn-ghost:hover{background:rgba(0,0,0,.05);color:var(--text)}
+.btn-sm{font-size:12px;padding:6px 14px;border-radius:6px}
+.wrap{max-width:var(--max-w);margin:0 auto;padding:0 48px}
+.section{padding:88px 0}.section-sm{padding:64px 0}
+.pt-nav{padding-top:calc(var(--nav-h) + 40px)}
+.eyebrow{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:12px}
+.section-title{font-size:clamp(26px,3.5vw,42px);font-weight:800;letter-spacing:-1.2px;line-height:1.06;color:var(--text);margin-bottom:14px}
+.tag{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:500;margin:2px}
+.tag-a{background:var(--accent-bg);color:var(--accent-txt);border:1px solid var(--accent-bdr)}
+.tag-g{background:var(--green-bg);color:var(--green-txt);border:1px solid var(--green-bdr)}
+.tag-b{background:var(--blue-bg);color:var(--blue-txt);border:1px solid var(--blue-bdr)}
+.tag-n{background:var(--bg2);color:var(--text2);border:1px solid var(--border2)}
+footer{border-top:1px solid var(--border);background:var(--bg2);padding:48px 0 28px}
+.footer-inner{display:grid;grid-template-columns:220px repeat(4,1fr);gap:40px;margin-bottom:36px}
+.footer-logo{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:800;color:var(--text);margin-bottom:8px}
+.footer-desc{font-size:12px;color:var(--text3);line-height:1.65}
+.footer-col-title{font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--text3);margin-bottom:14px}
+.footer-links{display:flex;flex-direction:column;gap:9px}
+.footer-links a{font-size:13px;color:var(--text3);transition:color .15s}
+.footer-links a:hover{color:var(--text2)}
+.footer-bottom{display:flex;align-items:center;justify-content:space-between;padding-top:22px;border-top:1px solid var(--border);font-size:12px;color:var(--text3);flex-wrap:wrap;gap:8px}
+@media(max-width:768px){#nav{padding:0 20px}.nav-links{display:none}.wrap{padding:0 20px}.footer-inner{grid-template-columns:1fr 1fr}}
+
+.e404-wrap{min-height:calc(100vh - var(--nav-h));display:flex;align-items:center;justify-content:center;padding:calc(var(--nav-h) + 40px) 24px 60px;text-align:center}
+.e404-inner{max-width:480px}
+.e404-code{font-size:96px;font-weight:900;letter-spacing:-4px;color:var(--bg3);line-height:1;margin-bottom:0;font-variant-numeric:tabular-nums}
+.e404-title{font-size:24px;font-weight:800;letter-spacing:-.5px;color:var(--text);margin-bottom:10px}
+.e404-sub{font-size:15px;color:var(--text2);line-height:1.7;margin-bottom:32px}
+.e404-links{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+</style>
+</head>
+<body>
+<nav id="nav">
+  <a href="/" class="nav-logo">
+    <div class="nav-logo-mark"><svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M7 1L13 7L7 13L1 7L7 1Z" fill="white"/></svg></div>
+    Vela
+  </a>
+  <ul class="nav-links">
+    <li><a href="how-it-works">How it works</a></li>
+    <li><a href="features">Features</a></li>
+    <li><a href="who-its-for">Who it's for</a></li>
+    <li><a href="pricing">Pricing</a></li>
+    <li><a href="about">About</a></li>
+  </ul>
+  <div class="nav-actions">
+    <a href="login" class="btn btn-ghost">Log in</a>
+    <a href="signup" class="btn btn-primary btn-sm">Start free</a>
+  </div>
+</nav>
+
+<div class="e404-wrap">
+  <div class="e404-inner">
+    <div class="e404-code">404</div>
+    <h1 class="e404-title">This page doesn't exist</h1>
+    <p class="e404-sub">The page you're looking for has moved, been deleted, or never existed. Let's get you back on track.</p>
+    <div class="e404-links">
+      <a href="/" class="btn btn-primary lg">Go to homepage</a>
+      <a href="signup" class="btn" style="background:var(--bg2);color:var(--text2);font-size:15px;padding:13px 28px;border-radius:9px;border:1px solid var(--border2)">Start free</a>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap">
+    <div class="footer-inner">
+      <div>
+        <div class="footer-logo">
+          <div class="nav-logo-mark"><svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M7 1L13 7L7 13L1 7L7 1Z" fill="white"/></svg></div>
+          Vela
+        </div>
+        <p class="footer-desc">AI demand gen for B2B and B2C teams. Build your repository, generate campaigns, deploy in minutes.</p>
+      </div>
+      <div>
+        <div class="footer-col-title">Product</div>
+        <ul class="footer-links">
+          <li><a href="how-it-works">How it works</a></li>
+          <li><a href="features">Features</a></li>
+          <li><a href="pricing">Pricing</a></li>
+          <li><a href="changelog">Changelog</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer-col-title">For teams</div>
+        <ul class="footer-links">
+          <li><a href="who-its-for">Who it's for</a></li>
+          <li><a href="who-its-for">B2B marketing</a></li>
+          <li><a href="who-its-for">B2C brands</a></li>
+          <li><a href="who-its-for">Agencies</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer-col-title">Resources</div>
+        <ul class="footer-links">
+          <li><a href="blog/index">Blog</a></li>
+          <li><a href="changelog">Changelog</a></li>
+          <li><a href="security">Security</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer-col-title">Legal</div>
+        <ul class="footer-links">
+          <li><a href="privacy">Privacy policy</a></li>
+          <li><a href="terms">Terms of service</a></li>
+          <li><a href="about">About</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>&copy; 2026 Vela. All rights reserved.</span>
+      <span>Built for every marketing team with a product to sell.</span>
+    </div>
+  </div>
+</footer>
+<script>window.addEventListener('scroll',function(){document.getElementById('nav').classList.toggle('scrolled',window.scrollY>10);});</script>
+</body>
+</html>

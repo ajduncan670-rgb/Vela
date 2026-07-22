@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Log in — Vela</title>
+<meta name="description" content="Log in to your Vela workspace and continue building AI-powered marketing campaigns.">
+<style>
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+button{cursor:pointer;font-family:inherit}
+img{display:block;max-width:100%}
+ul{list-style:none}
+:root{
+  --bg:#FAF8F4;--bg2:#F3F0EB;--bg3:#EEEBE5;--white:#FFFFFF;
+  --border:rgba(0,0,0,0.08);--border2:rgba(0,0,0,0.13);
+  --text:#1C1B19;--text2:#666460;--text3:#AAAAAA;
+  --accent:#E8960C;--accent-d:#C97E08;--accent-bg:#FEF3DB;
+  --accent-bdr:#F5D98A;--accent-txt:#92600A;
+  --green:#2A9D5C;--green-bg:#E8F5EE;--green-bdr:#A8D5BD;--green-txt:#1A6B3C;
+  --blue-bg:#EFF4FE;--blue-bdr:#BFCFFB;--blue-txt:#1A3A8F;
+  --red-bg:#FEF2F2;--red-bdr:#FECACA;--red-txt:#991B1B;
+  --purple:#7C3AED;--purple-bg:#F5F3FF;--purple-bdr:#DDD6FE;--purple-txt:#4C1D95;
+  --teal:#0D9488;--teal-bg:#F0FDFA;--teal-bdr:#99F6E4;--teal-txt:#0F766E;
+  --nav-h:60px;--max-w:1100px;--radius:12px;
+}
+/* NAV */
+#nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:center;justify-content:space-between;padding:0 48px;height:var(--nav-h);background:rgba(250,248,244,0.92);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);transition:box-shadow .2s}
+#nav.scrolled{box-shadow:0 2px 20px rgba(0,0,0,0.06)}
+.nav-logo{display:flex;align-items:center;gap:9px;font-size:16px;font-weight:800;letter-spacing:-.4px;color:var(--text)}
+.nav-logo-mark{width:26px;height:26px;background:var(--accent);border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.nav-links{display:flex;align-items:center;gap:32px}
+.nav-links a{font-size:13px;color:var(--text2);transition:color .15s}
+.nav-links a:hover,.nav-links a.active{color:var(--text)}
+.nav-actions{display:flex;align-items:center;gap:8px}
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:6px;font-family:inherit;font-weight:600;border:none;border-radius:8px;cursor:pointer;transition:all .15s;white-space:nowrap;text-decoration:none;line-height:1}
+.btn-primary{background:var(--accent);color:#fff;font-size:14px;padding:10px 22px}
+.btn-primary:hover{background:var(--accent-d);transform:translateY(-1px)}
+.btn-primary.lg{font-size:15px;padding:13px 28px;border-radius:9px}
+.btn-outline{background:var(--white);color:var(--text2);font-size:14px;padding:10px 22px;border:1px solid var(--border2)}
+.btn-outline:hover{border-color:rgba(0,0,0,.25);color:var(--text)}
+.btn-ghost{background:transparent;color:var(--text2);font-size:13px;padding:7px 14px;font-weight:500;border:none}
+.btn-ghost:hover{background:rgba(0,0,0,.05);color:var(--text)}
+.btn-sm{font-size:12px;padding:6px 14px;border-radius:6px}
+.btn-full{width:100%;justify-content:center}
+/* LAYOUT */
+.wrap{max-width:var(--max-w);margin:0 auto;padding:0 48px}
+.section{padding:88px 0}
+.section-sm{padding:64px 0}
+.pt-nav{padding-top:calc(var(--nav-h) + 40px)}
+.eyebrow{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:12px}
+.section-title{font-size:clamp(26px,3.5vw,42px);font-weight:800;letter-spacing:-1.2px;line-height:1.06;color:var(--text);margin-bottom:14px}
+.section-sub{font-size:16px;color:var(--text2);line-height:1.7;max-width:520px;margin-bottom:52px}
+.centered{text-align:center}
+.centered .section-sub{margin-left:auto;margin-right:auto}
+/* FORMS */
+.finput{width:100%;font-family:inherit;font-size:14px;color:var(--text);background:var(--white);border:1px solid var(--border2);border-radius:8px;padding:11px 14px;outline:none;transition:border-color .15s}
+.finput:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(232,150,12,.1)}
+.finput::placeholder{color:var(--text3)}
+.flabel{font-size:13px;font-weight:600;color:var(--text);display:block;margin-bottom:5px}
+.fg{margin-bottom:18px}
+.fg:last-child{margin-bottom:0}
+/* TAGS */
+.tag{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:500;margin:2px}
+.tag-a{background:var(--accent-bg);color:var(--accent-txt);border:1px solid var(--accent-bdr)}
+.tag-b{background:var(--blue-bg);color:var(--blue-txt);border:1px solid var(--blue-bdr)}
+.tag-n{background:var(--bg2);color:var(--text2);border:1px solid var(--border2)}
+.tag-p{background:var(--purple-bg);color:var(--purple-txt);border:1px solid var(--purple-bdr)}
+.tag-t{background:var(--teal-bg);color:var(--teal-txt);border:1px solid var(--teal-bdr)}
+/* FOOTER */
+footer{border-top:1px solid var(--border);background:var(--bg2);padding:48px 0 28px}
+.footer-inner{display:grid;grid-template-columns:220px repeat(4,1fr);gap:40px;margin-bottom:36px}
+.footer-logo{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:800;color:var(--text);margin-bottom:8px}
+.footer-desc{font-size:12px;color:var(--text3);line-height:1.65}
+.footer-col-title{font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--text3);margin-bottom:14px}
+.footer-links{display:flex;flex-direction:column;gap:9px}
+.footer-links a{font-size:13px;color:var(--text3);transition:color .15s}
+.footer-links a:hover{color:var(--text2)}
+.footer-bottom{display:flex;align-items:center;justify-content:space-between;padding-top:22px;border-top:1px solid var(--border);font-size:12px;color:var(--text3);flex-wrap:wrap;gap:8px}
+@media(max-width:768px){
+  #nav{padding:0 20px}
+  .nav-links{display:none}
+  .wrap{padding:0 20px}
+  .footer-inner{grid-template-columns:1fr 1fr}
+}
+
+
+.auth-wrap{min-height:calc(100vh - var(--nav-h));display:flex;align-items:center;justify-content:center;padding:calc(var(--nav-h) + 40px) 24px 60px}
+.auth-card{background:var(--white);border:1px solid var(--border);border-radius:16px;padding:40px;width:100%;max-width:440px}
+.auth-logo{display:flex;align-items:center;justify-content:center;gap:9px;font-size:18px;font-weight:800;letter-spacing:-.4px;margin-bottom:28px}
+.auth-logo-mark{width:32px;height:32px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center}
+.auth-title{font-size:22px;font-weight:800;letter-spacing:-.5px;color:var(--text);text-align:center;margin-bottom:6px}
+.auth-sub{font-size:14px;color:var(--text2);text-align:center;margin-bottom:28px;line-height:1.6}
+.auth-divider{display:flex;align-items:center;gap:12px;margin:20px 0;color:var(--text3);font-size:12px}
+.auth-divider::before,.auth-divider::after{content:'';flex:1;height:1px;background:var(--border)}
+.auth-social{display:flex;gap:10px;margin-bottom:6px}
+.auth-social-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 14px;background:var(--white);border:1px solid var(--border2);border-radius:8px;font-size:13px;font-weight:500;color:var(--text2);cursor:pointer;transition:all .15s}
+.auth-social-btn:hover{border-color:rgba(0,0,0,.2);color:var(--text)}
+.auth-footer-text{text-align:center;font-size:13px;color:var(--text3);margin-top:20px}
+.auth-footer-text a{color:var(--accent-txt);font-weight:500}
+.auth-footer-text a:hover{text-decoration:underline}
+.auth-terms{font-size:11px;color:var(--text3);text-align:center;margin-top:16px;line-height:1.6}
+.auth-terms a{color:var(--text3);}
+.auth-terms a:hover{color:var(--text2)}
+.mode-pills{display:flex;gap:8px;margin-bottom:24px}
+.mode-pill{flex:1;padding:10px 12px;border-radius:8px;border:1.5px solid var(--border2);background:var(--white);cursor:pointer;transition:all .15s;text-align:center}
+.mode-pill:hover{border-color:var(--accent-bdr)}
+.mode-pill.sel-b2b{border-color:var(--purple);background:var(--purple-bg)}
+.mode-pill.sel-b2c{border-color:var(--teal);background:var(--teal-bg)}
+.mode-pill-label{font-size:13px;font-weight:600;color:var(--text);display:block;margin-bottom:2px}
+.mode-pill.sel-b2b .mode-pill-label{color:var(--purple-txt)}
+.mode-pill.sel-b2c .mode-pill-label{color:var(--teal-txt)}
+.mode-pill-sub{font-size:11px;color:var(--text3)}
+.mode-pill.sel-b2b .mode-pill-sub{color:var(--purple-txt);opacity:.7}
+.mode-pill.sel-b2c .mode-pill-sub{color:var(--teal-txt);opacity:.7}
+.input-pw{position:relative}
+.input-pw .finput{padding-right:42px}
+.pw-toggle{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text3);cursor:pointer;font-size:12px;font-weight:500}
+.pw-toggle:hover{color:var(--text2)}
+.field-error{font-size:11px;color:#DC2626;margin-top:4px;display:none}
+.field-error.show{display:block}
+.submit-btn{width:100%;justify-content:center;padding:12px;font-size:15px;border-radius:8px;margin-top:4px}
+.submit-btn:disabled{opacity:.6;cursor:not-allowed}
+
+.auth-forgot{display:block;text-align:right;font-size:12px;color:var(--text3);margin-top:5px}
+.auth-forgot:hover{color:var(--accent-txt)}
+.magic-link-sent{background:var(--green-bg);border:1px solid var(--green-bdr);border-radius:10px;padding:20px;text-align:center;display:none}
+.magic-link-sent.show{display:block}
+.mls-icon{font-size:28px;margin-bottom:8px}
+.mls-title{font-size:15px;font-weight:700;color:var(--green-txt);margin-bottom:4px}
+.mls-sub{font-size:13px;color:var(--green-txt);opacity:.8;line-height:1.5}
+
+</style>
+</head>
+<body>
+<nav id="nav">
+  <a href="/" class="nav-logo">
+    <div class="nav-logo-mark"><svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M7 1L13 7L7 13L1 7L7 1Z" fill="white"/></svg></div>
+    Vela
+  </a>
+  <ul class="nav-links">
+    <li><a href="how-it-works">How it works</a></li>
+    <li><a href="features">Features</a></li>
+    <li><a href="who-its-for">Who it's for</a></li>
+    <li><a href="pricing">Pricing</a></li>
+    <li><a href="about">About</a></li>
+  </ul>
+  <div class="nav-actions">
+    <a href="login" class="btn btn-ghost">Log in</a>
+    <a href="signup" class="btn btn-primary btn-sm">Start free</a>
+  </div>
+</nav>
+
+<div class="auth-wrap">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div class="auth-logo-mark"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1L13 7L7 13L1 7L7 1Z" fill="white"/></svg></div>
+      Vela
+    </div>
+    <h1 class="auth-title">Welcome back</h1>
+    <p class="auth-sub">Log in to your workspace to continue building campaigns.</p>
+
+    <div class="auth-social">
+      <button class="auth-social-btn" onclick="handleSocial('Google')">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M15.68 8.18c0-.57-.05-1.12-.14-1.64H8v3.1h4.31a3.68 3.68 0 01-1.6 2.42v2h2.58c1.51-1.39 2.39-3.44 2.39-5.88z" fill="#4285F4"/><path d="M8 16c2.16 0 3.97-.72 5.3-1.94l-2.58-2c-.72.48-1.63.76-2.72.76-2.09 0-3.86-1.41-4.49-3.31H.84v2.07A8 8 0 008 16z" fill="#34A853"/><path d="M3.51 9.51A4.8 4.8 0 013.26 8c0-.53.09-1.04.25-1.51V4.42H.84A8 8 0 000 8c0 1.29.31 2.51.84 3.58l2.67-2.07z" fill="#FBBC05"/><path d="M8 3.18c1.18 0 2.23.4 3.06 1.2l2.3-2.3C11.97.72 10.16 0 8 0A8 8 0 00.84 4.42l2.67 2.07C4.14 4.59 5.91 3.18 8 3.18z" fill="#EA4335"/></svg>
+        Continue with Google
+      </button>
+      <button class="auth-social-btn" onclick="handleSocial('LinkedIn')">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect width="16" height="16" rx="2" fill="#0077B5"/><path d="M5.5 6.5v5h-2v-5h2zm-1-3a1 1 0 110 2 1 1 0 010-2zM8 6.5h1.9l.1.9c.4-.6 1.1-1 2-1 1.7 0 2 1.2 2 2.6V11.5h-2V9.3c0-.6-.2-1-.8-1-.6 0-.8.4-.8 1v2.2H8v-5z" fill="white"/></svg>
+        LinkedIn
+      </button>
+    </div>
+
+    <div class="auth-divider">or continue with email</div>
+
+    <div id="magic-sent" class="magic-link-sent">
+      <div class="mls-icon">✉️</div>
+      <div class="mls-title">Check your inbox</div>
+      <div class="mls-sub">We sent a magic link to <span id="sent-email" style="font-weight:600"></span>. Click it to log in — no password needed.</div>
+    </div>
+
+    <form id="login-form" onsubmit="handleLogin(event)">
+      <div class="fg">
+        <label class="flabel" for="email">Email</label>
+        <input class="finput" id="email" type="email" placeholder="alex@yourcompany.com" autocomplete="email" required>
+        <div class="field-error" id="email-error">Please enter a valid email address</div>
+      </div>
+
+      <div class="fg">
+        <label class="flabel" for="password">Password</label>
+        <div class="input-pw">
+          <input class="finput" id="password" type="password" placeholder="Your password" autocomplete="current-password">
+          <button type="button" class="pw-toggle" onclick="togglePw('password',this)">Show</button>
+        </div>
+        <a href="forgot-password" class="auth-forgot">Forgot password?</a>
+      </div>
+
+      <div style="display:flex;gap:10px;margin-top:4px">
+        <button type="submit" class="btn btn-primary submit-btn" id="submit-btn" style="flex:1">Log in</button>
+        <button type="button" class="btn btn-outline" id="magic-btn" onclick="sendMagicLink()" style="flex:1;justify-content:center;font-size:14px">Magic link</button>
+      </div>
+
+      <div class="field-error" id="auth-error" style="text-align:center;margin-top:8px"></div>
+    </form>
+
+    <p class="auth-footer-text" style="margin-top:20px">Don't have an account? <a href="signup">Start free</a></p>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap">
+    <div class="footer-inner">
+      <div>
+        <div class="footer-logo">
+          <div class="nav-logo-mark"><svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M7 1L13 7L7 13L1 7L7 1Z" fill="white"/></svg></div>
+          Vela
+        </div>
+        <p class="footer-desc">AI demand gen for B2B and B2C teams. Build your repository, generate campaigns, deploy in minutes.</p>
+      </div>
+      <div>
+        <div class="footer-col-title">Product</div>
+        <ul class="footer-links">
+          <li><a href="how-it-works">How it works</a></li>
+          <li><a href="features">Features</a></li>
+          <li><a href="pricing">Pricing</a></li>
+          <li><a href="changelog">Changelog</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer-col-title">For teams</div>
+        <ul class="footer-links">
+          <li><a href="who-its-for">Who it's for</a></li>
+          <li><a href="who-its-for.html#b2b">B2B marketing</a></li>
+          <li><a href="who-its-for.html#b2c">B2C brands</a></li>
+          <li><a href="who-its-for.html#agency">Agencies</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer-col-title">Resources</div>
+        <ul class="footer-links">
+          <li><a href="blog/index">Blog</a></li>
+          <li><a href="changelog">Changelog</a></li>
+          <li><a href="security">Security</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer-col-title">Legal</div>
+        <ul class="footer-links">
+          <li><a href="privacy">Privacy policy</a></li>
+          <li><a href="terms">Terms of service</a></li>
+          <li><a href="about">About</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 Vela. All rights reserved.</span>
+      <span>Built for every marketing team with a product to sell.</span>
+    </div>
+  </div>
+</footer>
+<script>
+window.addEventListener('scroll',function(){document.getElementById('nav').classList.toggle('scrolled',window.scrollY>10);});
+</script>
+<script>
+function togglePw(id,btn){var inp=document.getElementById(id);var show=inp.type==='password';inp.type=show?'text':'password';btn.textContent=show?'Hide':'Show';}
+function handleSocial(p){alert('Social auth with '+p+' — connect Supabase OAuth to activate.');}
+function handleLogin(e){
+  e.preventDefault();
+  var email=document.getElementById('email').value.trim();
+  var emailOk=/^[^@]+@[^@]+\.[^@]+$/.test(email);
+  if(!emailOk){document.getElementById('email-error').classList.add('show');return;}
+  document.getElementById('email-error').classList.remove('show');
+  var btn=document.getElementById('submit-btn');
+  btn.disabled=true;btn.textContent='Logging in...';
+  setTimeout(function(){window.location.href='app/index.html';},1000);
+}
+function sendMagicLink(){
+  var email=document.getElementById('email').value.trim();
+  var emailOk=/^[^@]+@[^@]+\.[^@]+$/.test(email);
+  if(!emailOk){document.getElementById('email-error').classList.add('show');return;}
+  document.getElementById('email-error').classList.remove('show');
+  document.getElementById('login-form').style.display='none';
+  document.getElementById('sent-email').textContent=email;
+  document.getElementById('magic-sent').classList.add('show');
+}
+window.addEventListener('scroll',function(){document.getElementById('nav').classList.toggle('scrolled',window.scrollY>10);});
+</script>
+</body>
+</html>

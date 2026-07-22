@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Changelog — Vela</title>
+<meta name="description" content="Every release, fix, and improvement to Vela — documented as it ships.">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:#FAF8F4;color:#1C1B19;line-height:1.6;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}button{cursor:pointer;font-family:inherit}img{display:block;max-width:100%}ul{list-style:none}
+:root{
+  --bg:#FAF8F4;--bg2:#F3F0EB;--bg3:#EEEBE5;--white:#FFFFFF;
+  --border:rgba(0,0,0,0.08);--border2:rgba(0,0,0,0.13);
+  --text:#1C1B19;--text2:#666460;--text3:#AAAAAA;
+  --accent:#E8960C;--accent-d:#C97E08;--accent-bg:#FEF3DB;--accent-bdr:#F5D98A;--accent-txt:#92600A;
+  --green:#2A9D5C;--green-bg:#E8F5EE;--green-bdr:#A8D5BD;--green-txt:#1A6B3C;
+  --blue-bg:#EFF4FE;--blue-bdr:#BFCFFB;--blue-txt:#1A3A8F;
+  --nav-h:60px;--max-w:1100px;--radius:12px;
+}
+#nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:center;justify-content:space-between;padding:0 48px;height:var(--nav-h);background:rgba(250,248,244,0.92);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);transition:box-shadow .2s}
+#nav.scrolled{box-shadow:0 2px 20px rgba(0,0,0,0.06)}
+.nav-logo{display:flex;align-items:center;gap:9px;font-size:16px;font-weight:800;letter-spacing:-.4px;color:var(--text)}
+.nav-logo-mark{width:26px;height:26px;background:var(--accent);border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.nav-links{display:flex;align-items:center;gap:32px}
+.nav-links a{font-size:13px;color:var(--text2);transition:color .15s}
+.nav-links a:hover,.nav-links a.active{color:var(--text)}
+.nav-actions{display:flex;align-items:center;gap:8px}
+.btn{display:inline-flex;align-items:center;gap:6px;font-family:inherit;font-weight:600;border:none;border-radius:8px;cursor:pointer;transition:all .15s;white-space:nowrap;text-decoration:none;line-height:1}
+.btn-primary{background:var(--accent);color:#fff;font-size:14px;padding:10px 22px}
+.btn-primary:hover{background:var(--accent-d);transform:translateY(-1px)}
+.btn-primary.lg{font-size:15px;padding:13px 28px;border-radius:9px}
+.btn-ghost{background:transparent;color:var(--text2);font-size:13px;padding:7px 14px;font-weight:500;border:none}
+.btn-ghost:hover{background:rgba(0,0,0,.05);color:var(--text)}
+.btn-sm{font-size:12px;padding:6px 14px;border-radius:6px}
+.wrap{max-width:var(--max-w);margin:0 auto;padding:0 48px}
+.section{padding:88px 0}.section-sm{padding:64px 0}
+.pt-nav{padding-top:calc(var(--nav-h) + 40px)}
+.eyebrow{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:12px}
+.section-title{font-size:clamp(26px,3.5vw,42px);font-weight:800;letter-spacing:-1.2px;line-height:1.06;color:var(--text);margin-bottom:14px}
+.tag{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:500;margin:2px}
+.tag-a{background:var(--accent-bg);color:var(--accent-txt);border:1px solid var(--accent-bdr)}
+.tag-g{background:var(--green-bg);color:var(--green-txt);border:1px solid var(--green-bdr)}
+.tag-b{background:var(--blue-bg);color:var(--blue-txt);border:1px solid var(--blue-bdr)}
+.tag-n{background:var(--bg2);color:var(--text2);border:1px solid var(--border2)}
+footer{border-top:1px solid var(--border);background:var(--bg2);padding:48px 0 28px}
+.footer-inner{display:grid;grid-template-columns:220px repeat(4,1fr);gap:40px;margin-bottom:36px}
+.footer-logo{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:800;color:var(--text);margin-bottom:8px}
+.footer-desc{font-size:12px;color:var(--text3);line-height:1.65}
+.footer-col-title{font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--text3);margin-bottom:14px}
+.footer-links{display:flex;flex-direction:column;gap:9px}
+.footer-links a{font-size:13px;color:var(--text3);transition:color .15s}
+.footer-links a:hover{color:var(--text2)}
+.footer-bottom{display:flex;align-items:center;justify-content:space-between;padding-top:22px;border-top:1px solid var(--border);font-size:12px;color:var(--text3);flex-wrap:wrap;gap:8px}
+@media(max-width:768px){#nav{padding:0 20px}.nav-links{display:none}.wrap{padding:0 20px}.footer-inner{grid-template-columns:1fr 1fr}}
+
+.cl-hero{padding:calc(var(--nav-h) + 60px) 0 48px;border-bottom:1px solid var(--border)}
+.cl-wrap{max-width:760px;margin:0 auto;padding:0 48px}
+.cl-title{font-size:clamp(30px,4vw,46px);font-weight:800;letter-spacing:-1.2px;color:var(--text);margin-bottom:10px}
+.cl-sub{font-size:16px;color:var(--text2);line-height:1.7;margin-bottom:0}
+.cl-body{padding:60px 0 100px}
+.cl-entry{display:grid;grid-template-columns:140px 1fr;gap:40px;margin-bottom:56px;padding-bottom:56px;border-bottom:1px solid var(--border)}
+.cl-entry:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+.cl-meta{padding-top:3px}
+.cl-date{font-size:13px;font-weight:600;color:var(--text);margin-bottom:8px}
+.cl-version{font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--text3);margin-bottom:10px}
+.cl-content-title{font-size:20px;font-weight:800;letter-spacing:-.4px;color:var(--text);margin-bottom:8px;line-height:1.25}
+.cl-content-sub{font-size:14px;color:var(--text2);line-height:1.7;margin-bottom:16px}
+.cl-items{display:flex;flex-direction:column;gap:10px}
+.cl-item{display:flex;gap:10px;align-items:flex-start;font-size:14px;color:var(--text2);line-height:1.6}
+.cl-item-dot{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;font-size:10px;font-weight:700}
+.cl-new{background:var(--accent-bg);color:var(--accent-txt);border:1px solid var(--accent-bdr)}
+.cl-fix{background:var(--green-bg);color:var(--green-txt);border:1px solid var(--green-bdr)}
+.cl-imp{background:var(--blue-bg);color:var(--blue-txt);border:1px solid var(--blue-bdr)}
+.cl-roadmap{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:36px;margin-top:56px}
+.cl-roadmap-title{font-size:18px;font-weight:800;letter-spacing:-.3px;color:var(--text);margin-bottom:6px}
+.cl-roadmap-sub{font-size:14px;color:var(--text2);margin-bottom:24px;line-height:1.6}
+.roadmap-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.rm-card{background:var(--white);border:1px solid var(--border);border-radius:10px;padding:16px}
+.rm-label{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-bottom:8px}
+.rm-item{font-size:13px;color:var(--text2);padding:5px 0;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.rm-item:last-child{border-bottom:none}
+.rm-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.rm-now{background:var(--accent)}
+.rm-next{background:var(--green)}
+.rm-later{background:var(--text3)}
+@media(max-width:768px){.cl-entry{grid-template-columns:1fr}.cl-wrap{padding:0 20px}.roadmap-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<nav id="nav">
+  <a href="/" class="nav-logo">
+    <div class="nav-logo-mark"><svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M7 1L13 7L7 13L1 7L7 1Z" fill="white"/></svg></div>
+    Vela
+  </a>
+  <ul class="nav-links">
+    <li><a href="how-it-works">How it works</a></li>
+    <li><a href="features">Features</a></li>
+    <li><a href="who-its-for">Who it's for</a></li>
+    <li><a href="pricing">Pricing</a></li>
+    <li><a href="about">About</a></li>
+  </ul>
+  <div class="nav-actions">
+    <a href="login" class="btn btn-ghost">Log in</a>
+    <a href="signup" class="btn btn-primary btn-sm">Start free</a>
+  </div>
+</nav>
+
+<div class="cl-hero">
+  <div class="cl-wrap">
+    <div class="eyebrow">Changelog</div>
+    <div class="cl-title">What's new in Vela</div>
+    <p class="cl-sub">Every release, fix, and improvement — documented as it ships. Follow along as Vela evolves from MVP to full platform.</p>
+  </div>
+</div>
+
+<div class="cl-body">
+  <div class="cl-wrap">
+
+    <div class="cl-entry">
+      <div class="cl-meta">
+        <div class="cl-date">July 21, 2026</div>
+        <div class="cl-version">v0.5 — MVP</div>
+        <span class="tag tag-a">Latest</span>
+      </div>
+      <div class="cl-content">
+        <div class="cl-content-title">B2B / B2C fork + smart channel selector</div>
+        <div class="cl-content-sub">The biggest product change since launch. Vela now has two fully distinct paths — one built for business buyers, one for individual consumers. Every intake question, campaign type, channel option, agent prompt, and QA rule is now mode-specific.</div>
+        <div class="cl-items">
+          <div class="cl-item"><div class="cl-item-dot cl-new">N</div><span><strong>Mode selector</strong> — B2B or B2C fork at onboarding entry. Hard fork, not a toggle. Mode is locked to workspace.</span></div>
+          <div class="cl-item"><div class="cl-item-dot cl-new">N</div><span><strong>Divergent Act 2 intake</strong> — B2B captures buyer title, company size, buying committee, deal cycle, business pain. B2C captures customer descriptor, life stage, shopping channels, purchase trigger, emotional driver, and aspiration.</span></div>
+          <div class="cl-item"><div class="cl-item-dot cl-new">N</div><span><strong>Smart channel selector</strong> — Claude API recommends the optimal channel mix based on campaign type, key message, and goal. Returns role (Primary / Supporting / Optional) and one-line rationale per channel. User confirms or adjusts before proceeding.</span></div>
+          <div class="cl-item"><div class="cl-item-dot cl-new">N</div><span><strong>7 B2C channels</strong> — email sequence, Instagram captions, TikTok/Reels script, SMS copy, paid ad copy, product page copy, influencer brief.</span></div>
+          <div class="cl-item"><div class="cl-item-dot cl-new">N</div><span><strong>7 B2B channels</strong> — email nurture, cold outreach, LinkedIn posts, landing page, sales battlecard, event follow-up sequence.</span></div>
+          <div class="cl-item"><div class="cl-item-dot cl-new">N</div><span><strong>Forked system prompts</strong> — <code>buildSys()</code> now branches into B2B (expert-to-expert, ROI-first, no warm-up) or B2C (benefit-first, emotion-second, FTC-aware, Grade 7-8 readability) agent persona.</span></div>
+          <div class="cl-item"><div class="cl-item-dot cl-new">N</div><span><strong>Mode-specific QA rules</strong> — B2B hard stops include cold outreach opening with "I", passive voice clusters, unattributed stats. B2C hard stops include fake scarcity, unsubstantiated superlatives, FTC-triggering influencer language.</span></div>
+          <div class="cl-item"><div class="cl-item-dot cl-new">N</div><span><strong>9 B2C campaign types</strong> — product launch, seasonal promo, cart abandonment, loyalty/retention, influencer brief, UGC campaign, brand awareness, win-back, new collection.</span></div>
+          <div class="cl-item"><div class="cl-item-dot cl-imp">I</div><span><strong>Mode badge</strong> in sidebar and campaign header — always visible, no ambiguity about which agent you're working with.</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cl-entry">
+      <div class="cl-meta">
+        <div class="cl-date">July 20, 2026</div>
+        <div class="cl-version">v0.4</div>
+      </div>
+      <div class="cl-content">
+        <div class="cl-content-title">Onboarding v2 + full command center</div>
+        <div class="cl-content-sub">Complete rebuild of the intake flow and campaign pipeline. The app now mirrors the Finzly campaign engine architecture, adapted for vertical-agnostic use.</div>
+        <div class="cl-items">
+          <div class="cl-item"><div class="cl-item-dot cl-new">N</div><span><strong>3-act progressive onboarding</strong> — Foundation, Audience, Voice + Guardrails. 10 total fields. Each feeds directly into the repository schema.</span></div>
+          <div class="cl-item"><div class="cl-item-dot cl-new">N</div><span><strong>Repository health scores</strong> — live scoring across 6 dimensions shown on review screen.</span></div>
+          <div class="cl-item"><div class="cl-item-dot cl-new">N</div><span><strong>5-stage campaign pipeline</strong> — Signal → Strategy → Assets → QA → Production Ready.</span></div>
+          <div class="cl-item"><div class="cl-item-dot cl-new">N</div><span><strong>QA agent</strong> — 3-round automated review: Brand/Voice, Claims/Accuracy, Conversion Effectiveness. Hard stop / Major / Minor severity classification.</span></div>
+          <div class="cl-item"><div class="cl-item-dot cl-new">N</div><span><strong>Asset tab parsing</strong> — output parsed by channel markers into individual tabs per asset type.</span></div>
+          <div class="cl-item"><div class="cl-item-dot cl-new">N</div><span><strong>Campaign library</strong> — save completed campaigns, browse by type, view assets by channel tab.</span></div>
+          <div class="cl-item"><div class="cl-item-dot cl-imp">I</div><span><strong>Prompt architecture</strong> — <code>buildSys()</code>, <code>buildStrategyPrompt()</code>, <code>buildAssetPrompt()</code>, <code>buildQAPrompt()</code> wired to Claude Sonnet 4.6.</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cl-entry">
+      <div class="cl-meta">
+        <div class="cl-date">July 14, 2026</div>
+        <div class="cl-version">v0.3</div>
+      </div>
+      <div class="cl-content">
+        <div class="cl-content-title">Marketing site — all 9 pages</div>
+        <div class="cl-content-sub">Full public site in the saffron design system. Self-contained HTML with inlined CSS for reliable rendering across all environments.</div>
+        <div class="cl-items">
+          <div class="cl-item"><div class="cl-item-dot cl-new">N</div><span>Homepage, How it works, Features, Pricing (with annual toggle), Who it's for (B2B / B2C / Agency), About, Security, Privacy, Terms</span></div>
+          <div class="cl-item"><div class="cl-item-dot cl-new">N</div><span><strong>Saffron design system</strong> — warm off-white base <code>#FAF8F4</code>, accent <code>#E8960C</code>, Inter typeface, shared token set across all pages.</span></div>
+          <div class="cl-item"><div class="cl-item-dot cl-new">N</div><span>Full GDPR/CCPA privacy policy and terms of service with IP trade secret clause.</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cl-entry">
+      <div class="cl-meta">
+        <div class="cl-date">July 12, 2026</div>
+        <div class="cl-version">v0.1 — v0.2</div>
+      </div>
+      <div class="cl-content">
+        <div class="cl-content-title">Foundation — thesis, stack, and first build</div>
+        <div class="cl-content-sub">Business thesis locked, tech stack selected, first working demo of the campaign engine.</div>
+        <div class="cl-items">
+          <div class="cl-item"><div class="cl-item-dot cl-new">N</div><span><strong>Core thesis locked</strong> — "The context is the product." Persistent brand repository per customer feeds purpose-built AI agents.</span></div>
+          <div class="cl-item"><div class="cl-item-dot cl-new">N</div><span><strong>Tech stack selected</strong> — Supabase + Vercel + Railway + Claude API Sonnet + Stripe + Resend + PostHog.</span></div>
+          <div class="cl-item"><div class="cl-item-dot cl-new">N</div><span><strong>Pricing tiers</strong> — Free / Solo $79 / Team $249 / Enterprise $799. No integrations on Solo/Team at MVP.</span></div>
+          <div class="cl-item"><div class="cl-item-dot cl-new">N</div><span>First campaign engine demo. Basic onboarding → single-agent generation → output.</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="roadmap" class="cl-roadmap">
+      <div class="cl-roadmap-title">What's coming</div>
+      <div class="cl-roadmap-sub">The build order is driven by what paying customers need first. Things shift — this is the current plan, not a contract.</div>
+      <div class="roadmap-grid">
+        <div class="rm-card">
+          <div class="rm-label">Now — validation sprint</div>
+          <div class="rm-item"><div class="rm-dot rm-now"></div>5 paying customers by Day 65</div>
+          <div class="rm-item"><div class="rm-dot rm-now"></div>Supabase auth + data persistence</div>
+          <div class="rm-item"><div class="rm-dot rm-now"></div>Stripe billing integration</div>
+          <div class="rm-item"><div class="rm-dot rm-now"></div>Domain + Wyoming LLC formation</div>
+          <div class="rm-item"><div class="rm-dot rm-now"></div>USPTO Class 42 trademark filing</div>
+        </div>
+        <div class="rm-card">
+          <div class="rm-label">Next — Month 2</div>
+          <div class="rm-item"><div class="rm-dot rm-next"></div>Document upload (Solo+ tier)</div>
+          <div class="rm-item"><div class="rm-dot rm-next"></div>Onboarding email sequence via Resend</div>
+          <div class="rm-item"><div class="rm-dot rm-next"></div>Campaign revision workflow</div>
+          <div class="rm-item"><div class="rm-dot rm-next"></div>PostHog analytics integration</div>
+          <div class="rm-item"><div class="rm-dot rm-next"></div>Multi-seat workspace (Team tier)</div>
+        </div>
+        <div class="rm-card">
+          <div class="rm-label">Later — Month 3+</div>
+          <div class="rm-item"><div class="rm-dot rm-later"></div>Gmail push integration (Enterprise)</div>
+          <div class="rm-item"><div class="rm-dot rm-later"></div>HubSpot connector</div>
+          <div class="rm-item"><div class="rm-dot rm-later"></div>Campaign performance tracking</div>
+          <div class="rm-item"><div class="rm-dot rm-later"></div>Agency white-label mode</div>
+          <div class="rm-item"><div class="rm-dot rm-later"></div>API access</div>
+        </div>
+        <div class="rm-card">
+          <div class="rm-label">Considering</div>
+          <div class="rm-item"><div class="rm-dot rm-later"></div>Native Canva / Figma export</div>
+          <div class="rm-item"><div class="rm-dot rm-later"></div>A/B variant generation</div>
+          <div class="rm-item"><div class="rm-dot rm-later"></div>Agency client workspace isolation</div>
+          <div class="rm-item"><div class="rm-dot rm-later"></div>Webhook triggers for CRM events</div>
+          <div class="rm-item"><div class="rm-dot rm-later"></div>Voice/tone evolution tracking</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<footer>
+  <div class="wrap">
+    <div class="footer-inner">
+      <div>
+        <div class="footer-logo">
+          <div class="nav-logo-mark"><svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M7 1L13 7L7 13L1 7L7 1Z" fill="white"/></svg></div>
+          Vela
+        </div>
+        <p class="footer-desc">AI demand gen for B2B and B2C teams. Build your repository, generate campaigns, deploy in minutes.</p>
+      </div>
+      <div>
+        <div class="footer-col-title">Product</div>
+        <ul class="footer-links">
+          <li><a href="how-it-works">How it works</a></li>
+          <li><a href="features">Features</a></li>
+          <li><a href="pricing">Pricing</a></li>
+          <li><a href="changelog">Changelog</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer-col-title">For teams</div>
+        <ul class="footer-links">
+          <li><a href="who-its-for">Who it's for</a></li>
+          <li><a href="who-its-for">B2B marketing</a></li>
+          <li><a href="who-its-for">B2C brands</a></li>
+          <li><a href="who-its-for">Agencies</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer-col-title">Resources</div>
+        <ul class="footer-links">
+          <li><a href="blog/index">Blog</a></li>
+          <li><a href="changelog">Changelog</a></li>
+          <li><a href="security">Security</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer-col-title">Legal</div>
+        <ul class="footer-links">
+          <li><a href="privacy">Privacy policy</a></li>
+          <li><a href="terms">Terms of service</a></li>
+          <li><a href="about">About</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>&copy; 2026 Vela. All rights reserved.</span>
+      <span>Built for every marketing team with a product to sell.</span>
+    </div>
+  </div>
+</footer>
+<script>window.addEventListener('scroll',function(){document.getElementById('nav').classList.toggle('scrolled',window.scrollY>10);});</script>
+</body>
+</html>

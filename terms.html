@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Terms of Service — Vela</title>
+<style>
+/* ═══════════════════════════════════════════════════
+   VELA DESIGN SYSTEM — Shared across all pages
+   Saffron palette · Inter typeface · Warm off-white
+═══════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+/* ── RESET ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; font-size: 16px; }
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: inherit; text-decoration: none; }
+button { cursor: pointer; font-family: inherit; }
+img { display: block; max-width: 100%; }
+ul { list-style: none; }
+
+/* ── TOKENS ── */
+:root {
+  --bg:          #FAF8F4;
+  --bg2:         #F3F0EB;
+  --bg3:         #EEEBE5;
+  --white:       #FFFFFF;
+  --border:      rgba(0,0,0,0.08);
+  --border2:     rgba(0,0,0,0.13);
+  --text:        #1C1B19;
+  --text2:       #666460;
+  --text3:       #AAAAAA;
+  --accent:      #E8960C;
+  --accent-d:    #C97E08;
+  --accent-bg:   #FEF3DB;
+  --accent-bdr:  #F5D98A;
+  --accent-txt:  #92600A;
+  --green:       #2A9D5C;
+  --green-bg:    #E8F5EE;
+  --green-bdr:   #A8D5BD;
+  --green-txt:   #1A6B3C;
+  --blue-bg:     #EFF4FE;
+  --blue-bdr:    #BFCFFB;
+  --blue-txt:    #1A3A8F;
+  --nav-h:       60px;
+  --max-w:       1100px;
+  --radius:      12px;
+}
+
+/* ── NAV ── */
+#nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 48px; height: var(--nav-h);
+  background: rgba(250,248,244,0.92);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--border);
+  transition: box-shadow .2s;
+}
+#nav.scrolled { box-shadow: 0 2px 20px rgba(0,0,0,0.06); }
+.nav-logo {
+  display: flex; align-items: center; gap: 9px;
+  font-size: 16px; font-weight: 800; letter-spacing: -.4px;
+  color: var(--text);
+}
+.nav-logo-mark {
+  width: 26px; height: 26px; background: var(--accent);
+  border-radius: 6px; display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.nav-links {
+  display: flex; align-items: center; gap: 32px;
+}
+.nav-links a {
+  font-size: 13px; color: var(--text2);
+  transition: color .15s;
+}
+.nav-links a:hover, .nav-links a.active { color: var(--text); }
+.nav-actions { display: flex; align-items: center; gap: 8px; }
+
+/* ── BUTTONS ── */
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: inherit; font-weight: 600; border: none;
+  border-radius: 8px; cursor: pointer;
+  transition: all .15s; white-space: nowrap;
+  text-decoration: none; line-height: 1;
+}
+.btn-primary { background: var(--accent); color: #fff; font-size: 14px; padding: 10px 22px; }
+.btn-primary:hover { background: var(--accent-d); transform: translateY(-1px); }
+.btn-primary.lg { font-size: 15px; padding: 13px 28px; border-radius: 9px; }
+.btn-outline {
+  background: var(--white); color: var(--text2);
+  font-size: 14px; padding: 10px 22px;
+  border: 1px solid var(--border2);
+}
+.btn-outline:hover { border-color: rgba(0,0,0,.25); color: var(--text); }
+.btn-outline.lg { font-size: 15px; padding: 13px 28px; border-radius: 9px; }
+.btn-ghost {
+  background: transparent; color: var(--text2);
+  font-size: 13px; padding: 7px 14px; font-weight: 500; border: none;
+}
+.btn-ghost:hover { background: rgba(0,0,0,.05); color: var(--text); }
+.btn-sm { font-size: 12px; padding: 6px 14px; border-radius: 6px; }
+
+/* ── LAYOUT ── */
+.wrap { max-width: var(--max-w); margin: 0 auto; padding: 0 48px; }
+.section { padding: 88px 0; }
+.section-sm { padding: 64px 0; }
+.pt-nav { padding-top: calc(var(--nav-h) + 40px); }
+.divider { height: 1px; background: var(--border); }
+
+/* ── TYPOGRAPHY ── */
+.eyebrow {
+  font-size: 11px; font-weight: 700; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--accent); margin-bottom: 12px;
+}
+.section-title {
+  font-size: clamp(26px, 3.5vw, 42px); font-weight: 800;
+  letter-spacing: -1.2px; line-height: 1.06; color: var(--text);
+  margin-bottom: 14px;
+}
+.section-sub {
+  font-size: 16px; color: var(--text2); line-height: 1.7;
+  max-width: 520px; margin-bottom: 52px;
+}
+.centered { text-align: center; }
+.centered .section-sub { margin-left: auto; margin-right: auto; }
+
+/* ── CARDS ── */
+.card {
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 24px;
+}
+.card-hover { transition: border-color .2s, box-shadow .2s; }
+.card-hover:hover {
+  border-color: var(--accent-bdr);
+  box-shadow: 0 4px 24px rgba(232,150,12,.08);
+}
+
+/* ── GRID UTILITIES ── */
+.g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.g3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; }
+.g4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; }
+.bento { display: grid; grid-template-columns: repeat(12,1fr); gap: 12px; }
+.b7 { grid-column: span 7; }
+.b5 { grid-column: span 5; }
+.b4 { grid-column: span 4; }
+
+/* ── TAGS / PILLS ── */
+.tag {
+  display: inline-block; padding: 3px 10px; border-radius: 20px;
+  font-size: 11px; font-weight: 500; margin: 2px 2px 2px 0;
+}
+.tag-a { background: var(--accent-bg); color: var(--accent-txt); border: 1px solid var(--accent-bdr); }
+.tag-g { background: var(--green-bg); color: var(--green-txt); border: 1px solid var(--green-bdr); }
+.tag-b { background: var(--blue-bg); color: var(--blue-txt); border: 1px solid var(--blue-bdr); }
+.tag-n { background: var(--bg2); color: var(--text2); border: 1px solid var(--border2); }
+
+/* ── ICONS (SVG inline containers) ── */
+.icon-box {
+  width: 40px; height: 40px; background: var(--accent-bg);
+  border: 1px solid var(--accent-bdr); border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.icon-box svg { width: 18px; height: 18px; }
+.icon-box.lg { width: 48px; height: 48px; border-radius: 11px; }
+.icon-box.lg svg { width: 22px; height: 22px; }
+
+/* ── PROOF BAR ── */
+.proof-bar {
+  background: var(--white);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 18px 0;
+}
+.proof-inner {
+  max-width: var(--max-w); margin: 0 auto; padding: 0 48px;
+  display: flex; gap: 0; justify-content: center; flex-wrap: wrap;
+}
+.proof-item {
+  font-size: 12px; color: var(--text3);
+  display: flex; align-items: center; gap: 8px;
+  padding: 5px 28px; border-right: 1px solid var(--border);
+}
+.proof-item:last-child { border-right: none; }
+.proof-item strong { color: var(--text2); font-weight: 500; }
+
+/* ── STEP NUMBERS ── */
+.step-num {
+  font-size: 11px; font-weight: 700;
+  color: var(--accent); letter-spacing: .04em; margin-bottom: 16px;
+}
+
+/* ── HEALTH BARS ── */
+.hrow { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.hlabel { font-size: 12px; color: var(--text2); min-width: 110px; }
+.hbg { flex: 1; height: 4px; background: var(--bg3); border-radius: 2px; }
+.hfill { height: 4px; border-radius: 2px; background: var(--accent); }
+.hval { font-size: 11px; color: var(--text3); min-width: 30px; text-align: right; }
+
+/* ── TESTIMONIALS ── */
+.testi-quote {
+  font-size: 14px; color: var(--text2); line-height: 1.75;
+  margin-bottom: 18px; font-style: italic;
+}
+.testi-author { display: flex; align-items: center; gap: 10px; }
+.testi-avatar {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: var(--accent-bg); border: 1px solid var(--accent-bdr);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; color: var(--accent-txt); flex-shrink: 0;
+}
+.testi-name { font-size: 13px; font-weight: 600; color: var(--text); }
+.testi-role { font-size: 11px; color: var(--text3); }
+
+/* ── PRICING CARDS ── */
+.price-card {
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 26px 22px;
+  display: flex; flex-direction: column; position: relative;
+  transition: border-color .2s;
+}
+.price-card:hover { border-color: var(--border2); }
+.price-card.featured {
+  border-color: var(--accent-bdr);
+  background: linear-gradient(160deg, var(--accent-bg) 0%, var(--white) 48%);
+}
+.price-popular {
+  position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
+  background: var(--accent); color: #fff; font-size: 10px; font-weight: 700;
+  padding: 3px 12px; border-radius: 20px; white-space: nowrap; letter-spacing: .04em;
+}
+.price-tier {
+  font-size: 11px; font-weight: 700; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--text2); margin-bottom: 10px;
+}
+.price-amount {
+  font-size: 34px; font-weight: 800; color: var(--text);
+  letter-spacing: -1.5px; line-height: 1; margin-bottom: 4px;
+}
+.price-amount span { font-size: 14px; font-weight: 400; color: var(--text3); letter-spacing: 0; }
+.price-desc {
+  font-size: 12px; color: var(--text2); line-height: 1.55;
+  margin-bottom: 18px; padding-bottom: 18px;
+  border-bottom: 1px solid var(--border); min-height: 42px;
+}
+.price-features { list-style: none; display: flex; flex-direction: column; gap: 8px; margin-bottom: 22px; flex: 1; }
+.pf { display: flex; align-items: flex-start; gap: 7px; font-size: 12px; color: var(--text2); line-height: 1.4; }
+.pf-check { color: var(--accent); flex-shrink: 0; font-weight: 700; font-size: 14px; margin-top: -1px; }
+.pf.dim { color: var(--text3); }
+.pf.dim .pf-check { color: var(--text3); }
+
+/* ── CTA SECTION ── */
+.cta-inner {
+  background: linear-gradient(135deg, var(--accent-bg) 0%, var(--white) 60%);
+  border: 1px solid var(--accent-bdr); border-radius: 20px;
+  padding: 68px 48px; text-align: center;
+}
+.cta-h2 {
+  font-size: clamp(26px, 3.5vw, 42px); font-weight: 800;
+  letter-spacing: -1.2px; color: var(--text); margin-bottom: 12px;
+}
+.cta-sub { font-size: 16px; color: var(--text2); margin-bottom: 32px; }
+.cta-actions { display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; }
+
+/* ── FOOTER ── */
+footer {
+  border-top: 1px solid var(--border);
+  background: var(--bg2); padding: 48px 0 28px;
+}
+.footer-inner {
+  display: grid; grid-template-columns: 220px repeat(4,1fr);
+  gap: 40px; margin-bottom: 36px;
+}
+.footer-logo {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 15px; font-weight: 800; color: var(--text);
+  margin-bottom: 8px;
+}
+.footer-desc { font-size: 12px; color: var(--text3); line-height: 1.65; }
+.footer-col-title {
+  font-size: 10px; font-weight: 700; letter-spacing: .09em;
+  text-transform: uppercase; color: var(--text3); margin-bottom: 14px;
+}
+.footer-links { display: flex; flex-direction: column; gap: 9px; }
+.footer-links a { font-size: 13px; color: var(--text3); transition: color .15s; }
+.footer-links a:hover { color: var(--text2); }
+.footer-bottom {
+  display: flex; align-items: center; justify-content: space-between;
+  padding-top: 22px; border-top: 1px solid var(--border);
+  font-size: 12px; color: var(--text3); flex-wrap: wrap; gap: 8px;
+}
+
+/* ── CHANNEL PILLS ── */
+.ch-pill {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 12px; color: var(--text2); background: var(--bg);
+  border: 1px solid var(--border); border-radius: 20px; padding: 4px 11px;
+}
+.ch-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--green); }
+.ch-dot.soon { background: var(--text3); }
+
+/* ── FEATURE MATRIX TABLE ── */
+.matrix { width: 100%; border-collapse: collapse; font-size: 13px; }
+.matrix th {
+  text-align: center; padding: 12px 14px;
+  font-size: 11px; font-weight: 700; letter-spacing: .07em;
+  text-transform: uppercase; color: var(--text2);
+  border-bottom: 2px solid var(--border); background: var(--bg);
+}
+.matrix th:first-child { text-align: left; }
+.matrix td {
+  padding: 11px 14px; border-bottom: 1px solid var(--border);
+  text-align: center; color: var(--text2); vertical-align: middle;
+}
+.matrix td:first-child { text-align: left; font-weight: 500; color: var(--text); }
+.matrix tr:nth-child(even) td { background: rgba(0,0,0,.015); }
+.matrix .yes { color: var(--accent); font-weight: 700; font-size: 16px; }
+.matrix .no { color: var(--text3); font-size: 16px; }
+.matrix .partial { color: var(--accent-txt); font-size: 12px; font-weight: 600; }
+.matrix-section td {
+  background: var(--bg2); font-size: 10px; font-weight: 700;
+  letter-spacing: .08em; text-transform: uppercase;
+  color: var(--text3); padding: 8px 14px; border-bottom: none;
+}
+
+/* ── FAQ ── */
+.faq-item { border-bottom: 1px solid var(--border); }
+.faq-q {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 0; cursor: pointer; font-size: 15px; font-weight: 600;
+  color: var(--text); gap: 14px;
+}
+.faq-q:hover { color: var(--accent-txt); }
+.faq-icon {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: var(--bg2); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; font-size: 14px; color: var(--text2);
+  transition: all .2s;
+}
+.faq-a {
+  font-size: 14px; color: var(--text2); line-height: 1.7;
+  padding-bottom: 18px; display: none;
+}
+.faq-item.open .faq-a { display: block; }
+.faq-item.open .faq-icon { background: var(--accent-bg); border-color: var(--accent-bdr); color: var(--accent-txt); transform: rotate(45deg); }
+
+/* ── PAGE HERO VARIANTS ── */
+.page-hero {
+  padding: calc(var(--nav-h) + 64px) 0 72px;
+  text-align: center;
+}
+.page-hero h1 {
+  font-size: clamp(36px, 5vw, 60px); font-weight: 800;
+  letter-spacing: -2px; line-height: 1.04; color: var(--text);
+  margin-bottom: 20px;
+}
+.page-hero h1 em { font-style: normal; color: var(--accent); }
+.page-hero p {
+  font-size: 17px; color: var(--text2); line-height: 1.7;
+  max-width: 540px; margin: 0 auto 36px;
+}
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--accent-bg); border: 1px solid var(--accent-bdr);
+  color: var(--accent-txt); font-size: 12px; font-weight: 500;
+  padding: 5px 13px; border-radius: 20px; margin-bottom: 24px;
+}
+.hero-badge-dot {
+  width: 6px; height: 6px; background: var(--accent); border-radius: 50%;
+  animation: pulse 2s ease-in-out infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(.8)} }
+
+/* ── BREADCRUMB ── */
+.breadcrumb {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; color: var(--text3); margin-bottom: 40px;
+}
+.breadcrumb a { color: var(--text3); transition: color .15s; }
+.breadcrumb a:hover { color: var(--text2); }
+.breadcrumb-sep { color: var(--text3); }
+
+/* ── LEGAL PAGE ── */
+.legal-body { max-width: 740px; margin: 0 auto; }
+.legal-body h2 { font-size: 18px; font-weight: 700; color: var(--text); margin: 36px 0 10px; }
+.legal-body h3 { font-size: 15px; font-weight: 600; color: var(--text); margin: 24px 0 8px; }
+.legal-body p { font-size: 14px; color: var(--text2); line-height: 1.75; margin-bottom: 14px; }
+.legal-body ul { margin: 8px 0 14px 20px; }
+.legal-body ul li { font-size: 14px; color: var(--text2); line-height: 1.7; margin-bottom: 6px; list-style: disc; }
+.legal-meta { font-size: 12px; color: var(--text3); margin-bottom: 36px; }
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fade-up { animation: fadeUp .4s ease both; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 960px) {
+  #nav { padding: 0 20px; }
+  .nav-links { display: none; }
+  .wrap { padding: 0 20px; }
+  .proof-inner { padding: 0 20px; gap: 16px; }
+  .proof-item { padding: 5px 14px; }
+  .g2, .g3, .g4 { grid-template-columns: 1fr; }
+  .b7, .b5, .b4 { grid-column: span 12; }
+  .footer-inner { grid-template-columns: 1fr 1fr; }
+  .cta-inner { padding: 48px 24px; }
+  .page-hero { padding: calc(var(--nav-h) + 40px) 0 52px; }
+}
+@media (max-width: 640px) {
+  .footer-inner { grid-template-columns: 1fr; }
+  .g4 { grid-template-columns: 1fr 1fr; }
+  .pricing-grid { grid-template-columns: 1fr; }
+}
+
+</style>
+</head>
+<body>
+<nav id="nav">
+  <a href="/" class="nav-logo"><div class="nav-logo-mark"><svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M7 1L13 7L7 13L1 7L7 1Z" fill="white"/></svg></div>Vela</a>
+  <ul class="nav-links"><li><a href="how-it-works">How it works</a></li><li><a href="features">Features</a></li><li><a href="pricing">Pricing</a></li><li><a href="about">About</a></li></ul>
+  <div class="nav-actions"><a href="login" class="btn btn-ghost">Log in</a><a href="signup" class="btn btn-primary btn-sm">Start free</a></div>
+</nav>
+
+<section class="section pt-nav">
+  <div class="wrap">
+    <div class="legal-body">
+      <p class="eyebrow">Legal</p>
+      <h1 style="font-size:clamp(28px,4vw,42px);font-weight:800;letter-spacing:-1.2px;color:var(--text);margin-bottom:8px">Terms of Service</h1>
+      <p class="legal-meta">Effective date: January 1, 2026 &nbsp;·&nbsp; Last updated: July 1, 2026</p>
+
+      <p>These Terms of Service ("Terms") govern your access to and use of the Vela platform and services operated by Vela ("Vela," "we," "us," or "our"). By creating an account or using our services, you agree to these Terms. If you do not agree, do not use the services.</p>
+
+      <h2>1. The service</h2>
+      <p>Vela provides an AI-powered demand generation platform that allows users to build a brand repository and generate marketing campaign content using AI agents. The service is provided on a subscription basis with the plan tiers described on our <a href="pricing" style="color:var(--accent-txt)">Pricing page</a>.</p>
+      <p>We reserve the right to modify, suspend, or discontinue any aspect of the service at any time. We will provide reasonable notice of material changes where possible.</p>
+
+      <h2>2. Account registration</h2>
+      <p>You must create an account to use Vela. You agree to provide accurate and complete information, maintain the security of your credentials, and notify us promptly of any unauthorized access to your account. You are responsible for all activity that occurs under your account.</p>
+      <p>You must be at least 18 years old to create an account. By registering, you represent that you meet this age requirement.</p>
+
+      <h2>3. Subscriptions and billing</h2>
+      <p>Vela offers a free tier and paid subscription plans (Solo, Team, Enterprise) billed monthly or annually. Subscriptions renew automatically at the end of each billing period unless cancelled.</p>
+      <ul>
+        <li><strong>Upgrades</strong> take effect immediately. You will be charged a prorated amount for the remainder of the current billing period.</li>
+        <li><strong>Downgrades</strong> take effect at the end of the current billing period.</li>
+        <li><strong>Cancellations</strong> take effect at the end of the current billing period. You retain access to paid features until the period ends.</li>
+        <li><strong>Refunds</strong> are not provided for partial billing periods, except where required by applicable law.</li>
+      </ul>
+      <p>All payments are processed by Stripe. By providing payment information, you authorize Stripe to charge your payment method on a recurring basis. If payment fails, we will attempt to notify you and may suspend your account until payment is resolved.</p>
+
+      <h2>4. Acceptable use</h2>
+      <p>You agree to use Vela only for lawful purposes and in accordance with these Terms. You agree not to:</p>
+      <ul>
+        <li>Use the service to generate content that is false, misleading, defamatory, harassing, or violates any applicable law.</li>
+        <li>Attempt to reverse engineer, decompile, or extract the underlying AI model weights, system prompts, or proprietary prompt architecture used by Vela.</li>
+        <li>Use automated means to access the service in ways that exceed your plan's usage limits or that place unreasonable load on our infrastructure.</li>
+        <li>Share your account credentials with individuals outside your authorized team seats.</li>
+        <li>Use the service to generate spam, phishing content, or content intended to deceive recipients.</li>
+        <li>Attempt to circumvent usage metering, billing, or any access controls.</li>
+        <li>Resell or sublicense access to the service except as explicitly permitted under an Enterprise white-label agreement.</li>
+      </ul>
+
+      <h2>5. Your content and data</h2>
+      <h3>You own your content</h3>
+      <p>You retain all ownership rights to the content you upload to Vela (brand guides, product documents, past campaigns) and the campaign content generated through the service. By using Vela, you grant us a limited, non-exclusive license to process your content solely for the purpose of delivering the service to you.</p>
+
+      <h3>We do not train on your data</h3>
+      <p>Your repository content, uploaded documents, and campaign outputs are never used to train any shared AI model. This license is strictly limited to service delivery for your account.</p>
+
+      <h3>Your responsibility for content</h3>
+      <p>You are solely responsible for the content you upload and the campaigns you generate and deploy. You represent that you have all necessary rights to any content you upload, and that your use of generated campaign content complies with applicable laws, including advertising standards, financial regulations, and intellectual property rights.</p>
+
+      <h2>6. AI-generated content</h2>
+      <p>Campaign content generated by Vela is produced by AI systems and may contain inaccuracies, errors, or content that requires human review before deployment. We strongly recommend reviewing all AI-generated content before publishing or distributing it. Vela does not warrant that generated content is accurate, complete, error-free, or compliant with any specific regulatory requirement.</p>
+      <p>You are responsible for the accuracy of any claims, statistics, or factual statements in content you deploy, regardless of whether they originated from AI generation.</p>
+
+      <h2>7. Intellectual property</h2>
+      <p>Vela and its licensors own all rights to the platform, including the underlying software, prompt architecture, agent configurations, design system, trademarks, and all proprietary technology. Nothing in these Terms transfers any ownership of Vela's intellectual property to you.</p>
+      <p>The prompt architecture used by Vela's AI agents — including system prompts, context assembly logic, and agent routing mechanisms — is proprietary trade secret information. You agree not to attempt to extract, replicate, or reverse engineer this architecture.</p>
+
+      <h2>8. Confidentiality</h2>
+      <p>Each party agrees to keep confidential any non-public information of the other party that is designated as confidential or that reasonably should be understood to be confidential. This obligation does not apply to information that is publicly available, independently developed, or required to be disclosed by law.</p>
+
+      <h2>9. Disclaimer of warranties</h2>
+      <p>The service is provided "as is" and "as available" without warranty of any kind, express or implied. Vela expressly disclaims all warranties, including implied warranties of merchantability, fitness for a particular purpose, and non-infringement. We do not warrant that the service will be uninterrupted, error-free, or free of viruses or other harmful components.</p>
+
+      <h2>10. Limitation of liability</h2>
+      <p>To the maximum extent permitted by applicable law, Vela shall not be liable for any indirect, incidental, special, consequential, or punitive damages, including loss of profits, revenue, data, or goodwill, arising from your use of or inability to use the service. In no event shall Vela's total liability to you exceed the greater of (a) the amount you paid for the service in the 12 months preceding the claim, or (b) $100.</p>
+
+      <h2>11. Indemnification</h2>
+      <p>You agree to indemnify, defend, and hold harmless Vela and its officers, directors, employees, and agents from any claims, damages, losses, liabilities, and expenses (including reasonable attorneys' fees) arising from your use of the service, your violation of these Terms, or your violation of any rights of a third party.</p>
+
+      <h2>12. Termination</h2>
+      <p>We may suspend or terminate your account if you violate these Terms, if your payment is repeatedly unsuccessful, or if we reasonably believe your use of the service poses a risk to other users or our infrastructure. You may terminate your account at any time through the account settings. Upon termination, your access to the service ends and your data is retained for 90 days before permanent deletion.</p>
+
+      <h2>13. Governing law and disputes</h2>
+      <p>These Terms are governed by the laws of the State of New Jersey, United States, without regard to conflict of law principles. Any dispute arising from these Terms shall be resolved through binding arbitration administered by the American Arbitration Association under its Commercial Arbitration Rules. You waive any right to a jury trial or class action proceeding.</p>
+
+      <h2>14. Changes to these Terms</h2>
+      <p>We may update these Terms from time to time. We will notify you of material changes by email at least 14 days before they take effect. Continued use of the service after the effective date constitutes your acceptance of the revised Terms. If you do not agree to the revised Terms, you must stop using the service before the effective date.</p>
+
+      <h2>15. Contact</h2>
+      <p>Questions about these Terms should be directed to:</p>
+      <p><strong>Vela</strong><br>
+      Email: <a href="mailto:legal@getvela.io" style="color:var(--accent-txt)">legal@getvela.io</a><br>
+      Glassboro, NJ, United States</p>
+    </div>
+  </div>
+</section>
+
+<footer><div class="wrap">
+  <div class="footer-inner">
+    <div><div class="footer-logo"><div class="nav-logo-mark"><svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M7 1L13 7L7 13L1 7L7 1Z" fill="white"/></svg></div>Vela</div><p class="footer-desc">AI demand gen for every marketing team.</p></div>
+    <div><div class="footer-col-title">Product</div><ul class="footer-links"><li><a href="how-it-works">How it works</a></li><li><a href="features">Features</a></li><li><a href="pricing">Pricing</a></li></ul></div>
+    <div><div class="footer-col-title">For teams</div><ul class="footer-links"><li><a href="who-its-for">Who it's for</a></li></ul></div>
+    <div><div class="footer-col-title">Company</div><ul class="footer-links"><li><a href="about">About</a></li></ul></div>
+    <div><div class="footer-col-title">Legal</div><ul class="footer-links"><li><a href="privacy">Privacy</a></li><li><a href="terms">Terms</a></li><li><a href="security">Security</a></li></ul></div>
+  </div>
+  <div class="footer-bottom"><span>© 2026 Vela. All rights reserved.</span><span><a href="terms" style="color:var(--text3)">Terms</a> &nbsp;·&nbsp; <a href="privacy" style="color:var(--text3)">Privacy</a> &nbsp;·&nbsp; <a href="security" style="color:var(--text3)">Security</a></span></div>
+</div></footer>
+<script>window.addEventListener('scroll',function(){document.getElementById('nav').classList.toggle('scrolled',window.scrollY>10);},{passive:true});</script>
+</body>
+</html>
