@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Context is the moat: why generic AI tools fail at marketing — Vela Blog</title>
+<meta name="description" content="Why generic AI tools produce generic marketing copy, and how a persistent brand context layer is the real competitive advantage.">
+<style>
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+button{cursor:pointer;font-family:inherit}
+img{display:block;max-width:100%}
+ul{list-style:none}
+:root{
+  --bg:#FAF8F4;--bg2:#F3F0EB;--bg3:#EEEBE5;--white:#FFFFFF;
+  --border:rgba(0,0,0,0.08);--border2:rgba(0,0,0,0.13);
+  --text:#1C1B19;--text2:#666460;--text3:#AAAAAA;
+  --accent:#E8960C;--accent-d:#C97E08;--accent-bg:#FEF3DB;
+  --accent-bdr:#F5D98A;--accent-txt:#92600A;
+  --green:#2A9D5C;--green-bg:#E8F5EE;--green-bdr:#A8D5BD;--green-txt:#1A6B3C;
+  --blue-bg:#EFF4FE;--blue-bdr:#BFCFFB;--blue-txt:#1A3A8F;
+  --red-bg:#FEF2F2;--red-bdr:#FECACA;--red-txt:#991B1B;
+  --purple:#7C3AED;--purple-bg:#F5F3FF;--purple-bdr:#DDD6FE;--purple-txt:#4C1D95;
+  --teal:#0D9488;--teal-bg:#F0FDFA;--teal-bdr:#99F6E4;--teal-txt:#0F766E;
+  --nav-h:60px;--max-w:1100px;--radius:12px;
+}
+/* NAV */
+#nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:center;justify-content:space-between;padding:0 48px;height:var(--nav-h);background:rgba(250,248,244,0.92);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);transition:box-shadow .2s}
+#nav.scrolled{box-shadow:0 2px 20px rgba(0,0,0,0.06)}
+.nav-logo{display:flex;align-items:center;gap:9px;font-size:16px;font-weight:800;letter-spacing:-.4px;color:var(--text)}
+.nav-logo-mark{width:26px;height:26px;background:var(--accent);border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.nav-links{display:flex;align-items:center;gap:32px}
+.nav-links a{font-size:13px;color:var(--text2);transition:color .15s}
+.nav-links a:hover,.nav-links a.active{color:var(--text)}
+.nav-actions{display:flex;align-items:center;gap:8px}
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:6px;font-family:inherit;font-weight:600;border:none;border-radius:8px;cursor:pointer;transition:all .15s;white-space:nowrap;text-decoration:none;line-height:1}
+.btn-primary{background:var(--accent);color:#fff;font-size:14px;padding:10px 22px}
+.btn-primary:hover{background:var(--accent-d);transform:translateY(-1px)}
+.btn-primary.lg{font-size:15px;padding:13px 28px;border-radius:9px}
+.btn-outline{background:var(--white);color:var(--text2);font-size:14px;padding:10px 22px;border:1px solid var(--border2)}
+.btn-outline:hover{border-color:rgba(0,0,0,.25);color:var(--text)}
+.btn-ghost{background:transparent;color:var(--text2);font-size:13px;padding:7px 14px;font-weight:500;border:none}
+.btn-ghost:hover{background:rgba(0,0,0,.05);color:var(--text)}
+.btn-sm{font-size:12px;padding:6px 14px;border-radius:6px}
+.btn-full{width:100%;justify-content:center}
+/* LAYOUT */
+.wrap{max-width:var(--max-w);margin:0 auto;padding:0 48px}
+.section{padding:88px 0}
+.section-sm{padding:64px 0}
+.pt-nav{padding-top:calc(var(--nav-h) + 40px)}
+.eyebrow{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:12px}
+.section-title{font-size:clamp(26px,3.5vw,42px);font-weight:800;letter-spacing:-1.2px;line-height:1.06;color:var(--text);margin-bottom:14px}
+.section-sub{font-size:16px;color:var(--text2);line-height:1.7;max-width:520px;margin-bottom:52px}
+.centered{text-align:center}
+.centered .section-sub{margin-left:auto;margin-right:auto}
+/* FORMS */
+.finput{width:100%;font-family:inherit;font-size:14px;color:var(--text);background:var(--white);border:1px solid var(--border2);border-radius:8px;padding:11px 14px;outline:none;transition:border-color .15s}
+.finput:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(232,150,12,.1)}
+.finput::placeholder{color:var(--text3)}
+.flabel{font-size:13px;font-weight:600;color:var(--text);display:block;margin-bottom:5px}
+.fg{margin-bottom:18px}
+.fg:last-child{margin-bottom:0}
+/* TAGS */
+.tag{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:500;margin:2px}
+.tag-a{background:var(--accent-bg);color:var(--accent-txt);border:1px solid var(--accent-bdr)}
+.tag-b{background:var(--blue-bg);color:var(--blue-txt);border:1px solid var(--blue-bdr)}
+.tag-n{background:var(--bg2);color:var(--text2);border:1px solid var(--border2)}
+.tag-p{background:var(--purple-bg);color:var(--purple-txt);border:1px solid var(--purple-bdr)}
+.tag-t{background:var(--teal-bg);color:var(--teal-txt);border:1px solid var(--teal-bdr)}
+/* FOOTER */
+footer{border-top:1px solid var(--border);background:var(--bg2);padding:48px 0 28px}
+.footer-inner{display:grid;grid-template-columns:220px repeat(4,1fr);gap:40px;margin-bottom:36px}
+.footer-logo{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:800;color:var(--text);margin-bottom:8px}
+.footer-desc{font-size:12px;color:var(--text3);line-height:1.65}
+.footer-col-title{font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--text3);margin-bottom:14px}
+.footer-links{display:flex;flex-direction:column;gap:9px}
+.footer-links a{font-size:13px;color:var(--text3);transition:color .15s}
+.footer-links a:hover{color:var(--text2)}
+.footer-bottom{display:flex;align-items:center;justify-content:space-between;padding-top:22px;border-top:1px solid var(--border);font-size:12px;color:var(--text3);flex-wrap:wrap;gap:8px}
+@media(max-width:768px){
+  #nav{padding:0 20px}
+  .nav-links{display:none}
+  .wrap{padding:0 20px}
+  .footer-inner{grid-template-columns:1fr 1fr}
+}
+
+
+.post-hero{padding:calc(var(--nav-h) + 60px) 0 56px;border-bottom:1px solid var(--border)}
+.post-back{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--text3);margin-bottom:28px;transition:color .15s}
+.post-back:hover{color:var(--text2)}
+.post-eyebrow{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+.post-title{font-size:clamp(28px,4vw,46px);font-weight:800;letter-spacing:-1.2px;line-height:1.1;color:var(--text);margin-bottom:16px;max-width:700px}
+.post-meta{font-size:13px;color:var(--text3);display:flex;align-items:center;gap:14px}
+.post-meta-dot{width:3px;height:3px;border-radius:50%;background:var(--text3)}
+.post-body{max-width:680px;margin:0 auto;padding:56px 0 80px}
+.post-body h2{font-size:22px;font-weight:800;letter-spacing:-.4px;color:var(--text);margin:40px 0 14px;line-height:1.25}
+.post-body h3{font-size:17px;font-weight:700;color:var(--text);margin:28px 0 10px}
+.post-body p{font-size:16px;color:var(--text2);line-height:1.8;margin-bottom:18px}
+.post-body ul,.post-body ol{margin:8px 0 20px 0;display:flex;flex-direction:column;gap:8px}
+.post-body ul li,.post-body ol li{font-size:15px;color:var(--text2);line-height:1.7;display:flex;gap:10px}
+.post-body ul li::before{content:'—';color:var(--accent);flex-shrink:0;font-weight:700}
+.post-body ol{counter-reset:num}
+.post-body ol li{counter-increment:num}
+.post-body ol li::before{content:counter(num)'.';color:var(--accent-txt);font-weight:700;flex-shrink:0;min-width:20px}
+.post-body strong{color:var(--text);font-weight:600}
+.post-body hr{border:none;border-top:1px solid var(--border);margin:40px 0}
+.pullquote{background:var(--accent-bg);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;padding:20px 24px;margin:28px 0;font-size:17px;font-weight:600;color:var(--accent-txt);line-height:1.55}
+.post-cta{background:linear-gradient(135deg,var(--accent-bg) 0%,var(--white) 60%);border:1px solid var(--accent-bdr);border-radius:14px;padding:36px;text-align:center;margin:48px 0}
+.post-cta h3{font-size:20px;font-weight:800;color:var(--text);margin-bottom:8px}
+.post-cta p{font-size:14px;color:var(--text2);margin-bottom:20px;line-height:1.6}
+.post-nav{border-top:1px solid var(--border);padding:32px 0;display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
+.post-nav-item{display:flex;flex-direction:column;gap:4px;max-width:280px}
+.post-nav-label{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text3)}
+.post-nav-title{font-size:14px;font-weight:600;color:var(--accent-txt)}
+.post-nav-title:hover{text-decoration:underline}
+
+</style>
+</head>
+<body>
+<nav id="nav">
+  <a href="/" class="nav-logo">
+    <div class="nav-logo-mark"><svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M7 1L13 7L7 13L1 7L7 1Z" fill="white"/></svg></div>
+    Vela
+  </a>
+  <ul class="nav-links">
+    <li><a href="../how-it-works">How it works</a></li>
+    <li><a href="../features">Features</a></li>
+    <li><a href="../who-its-for">Who it's for</a></li>
+    <li><a href="../pricing">Pricing</a></li>
+    <li><a href="../about">About</a></li>
+  </ul>
+  <div class="nav-actions">
+    <a href="../login" class="btn btn-ghost">Log in</a>
+    <a href="../signup" class="btn btn-primary btn-sm">Start free</a>
+  </div>
+</nav>
+
+<div class="post-hero">
+  <div class="wrap">
+    <a href="/" class="post-back">
+      <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 6.5H2.5M5.5 3.5L2.5 6.5L5.5 9.5"/></svg>
+      All posts
+    </a>
+    <div class="post-eyebrow">
+      <span class="tag tag-a">Strategy</span>
+      <span class="tag tag-n">6 min read</span>
+    </div>
+    <h1 class="post-title">Context is the moat: why generic AI tools fail at marketing</h1>
+    <div class="post-meta">
+      <span>July 14, 2026</span>
+      <span class="post-meta-dot"></span>
+      <span>Alex Duncan</span>
+      <span class="post-meta-dot"></span>
+      <span>Founder, Vela</span>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="post-body">
+    <p>Open any AI writing tool right now and type: <em>"Write a B2B email about our new payments product."</em></p>
+    <p>You'll get something technically competent. Grammatically correct. Probably formatted correctly. And completely indistinguishable from the hundred other B2B payment emails hitting your prospect's inbox this week.</p>
+    <p>This is the core problem with how most marketing teams are using AI today. They're treating it as a faster typewriter — and the output sounds like one.</p>
+
+    <h2>The generic problem</h2>
+    <p>Generic AI tools have no context about your brand. They don't know:</p>
+    <ul>
+      <li>What specific problem you solve and for whom</li>
+      <li>The precise language your buyers use to describe their pain</li>
+      <li>The claims you're cleared to make vs. the ones you can't touch</li>
+      <li>The voice that earned you the customers you already have</li>
+      <li>The competitive context that shapes every positioning decision</li>
+    </ul>
+    <p>Without that context, the model defaults to the statistical average of marketing copy it was trained on. And the statistical average of marketing copy is the same brand-agnostic filler that's been cluttering inboxes for a decade.</p>
+
+    <div class="pullquote">The problem isn't that AI can't write good marketing copy. It's that good marketing copy requires knowing things the model doesn't know.</div>
+
+    <h2>Why the context layer is where differentiation lives</h2>
+    <p>Think about what separates a great senior copywriter from a competent junior one. It's not vocabulary. It's not grammar. It's accumulated context — they know your customers, your category, your competition, your voice, and the three things you can never say in a sales call.</p>
+    <p>That accumulated context is exactly what's missing from generic AI tools. They can imitate structure and style. They cannot replicate knowledge.</p>
+    <p>The fix is not a better prompt. It's a persistent context layer that lives between your brand and the model — a repository that holds everything the model needs to generate output that actually sounds like you.</p>
+
+    <h2>What that context layer actually contains</h2>
+    <p>A real context repository isn't a brand voice doc. Those are written for humans. A repository built for AI needs to encode:</p>
+    <ul>
+      <li><strong>Company context</strong> — what you do, for whom, and the specific outcome customers get</li>
+      <li><strong>Buyer profile</strong> — the exact person experiencing the pain, the words they use, what keeps them up</li>
+      <li><strong>Positioning</strong> — concrete differentiators with numbers, not adjectives</li>
+      <li><strong>Voice model</strong> — word-level and rhythm-level guidance, with examples your agent can study</li>
+      <li><strong>Hard guardrails</strong> — words you never use, claims you can't make, regulatory context</li>
+      <li><strong>Approved evidence</strong> — the specific studies, stats, and sources you're cleared to cite</li>
+    </ul>
+    <p>When you build that repository once and feed it to the model on every generation call, the output stops sounding generic. It starts sounding like you — because the model is operating with the knowledge that makes you different.</p>
+
+    <h2>The compounding advantage</h2>
+    <p>Here's the part most teams miss: this context gets better over time.</p>
+    <p>Every campaign you build adds signal. Every asset that converts tells you something about what resonates. Every QA flag teaches you a new rule. The repository compounds — and the model's outputs get more differentiated with every iteration.</p>
+    <p>A generic AI tool has no memory of your last campaign. A context-first system has memory of all of them. That's the moat.</p>
+    <p>The teams that win the AI-in-marketing era won't be the ones who found the best model. They'll be the ones who built the richest context layer around a good one.</p>
+
+    <hr>
+
+    <div class="post-cta">
+      <h3>Build your context repository in Vela</h3>
+      <p>Three-act onboarding captures everything your agent needs. Start generating differentiated campaigns in under 10 minutes.</p>
+      <a href="../signup" class="btn btn-primary lg">Start free — no credit card</a>
+    </div>
+
+    <div class="post-nav">
+      <div class="post-nav-item">
+        <span class="post-nav-label">Previous</span>
+        <a href="5-campaign-frameworks" class="post-nav-title">5 campaign frameworks that actually convert in 2026 →</a>
+      </div>
+      <div class="post-nav-item" style="text-align:right">
+        <span class="post-nav-label">Next</span>
+        <a href="b2b-vs-b2c-demand-gen" class="post-nav-title">B2B and B2C demand gen aren't just different — they're opposites →</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap">
+    <div class="footer-inner">
+      <div>
+        <div class="footer-logo">
+          <div class="nav-logo-mark"><svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M7 1L13 7L7 13L1 7L7 1Z" fill="white"/></svg></div>
+          Vela
+        </div>
+        <p class="footer-desc">AI demand gen for B2B and B2C teams. Build your repository, generate campaigns, deploy in minutes.</p>
+      </div>
+      <div>
+        <div class="footer-col-title">Product</div>
+        <ul class="footer-links">
+          <li><a href="../how-it-works">How it works</a></li>
+          <li><a href="../features">Features</a></li>
+          <li><a href="../pricing">Pricing</a></li>
+          <li><a href="../changelog">Changelog</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer-col-title">For teams</div>
+        <ul class="footer-links">
+          <li><a href="../who-its-for">Who it's for</a></li>
+          <li><a href="who-its-for.html#b2b">B2B marketing</a></li>
+          <li><a href="who-its-for.html#b2c">B2C brands</a></li>
+          <li><a href="who-its-for.html#agency">Agencies</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer-col-title">Resources</div>
+        <ul class="footer-links">
+          <li><a href="/">Blog</a></li>
+          <li><a href="../changelog">Changelog</a></li>
+          <li><a href="../security">Security</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer-col-title">Legal</div>
+        <ul class="footer-links">
+          <li><a href="../privacy">Privacy policy</a></li>
+          <li><a href="../terms">Terms of service</a></li>
+          <li><a href="../about">About</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 Vela. All rights reserved.</span>
+      <span>Built for every marketing team with a product to sell.</span>
+    </div>
+  </div>
+</footer>
+<script>
+window.addEventListener('scroll',function(){document.getElementById('nav').classList.toggle('scrolled',window.scrollY>10);});
+</script>
+
+</body>
+</html>
