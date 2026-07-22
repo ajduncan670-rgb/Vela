@@ -1,26 +1,48 @@
 {
   "cleanUrls": true,
   "trailingSlash": false,
-  "rewrites": [
-    { "source": "/app", "destination": "/app/index.html" },
-    { "source": "/blog", "destination": "/blog/index.html" }
-  ],
   "redirects": [
-    { "source": "/home", "destination": "/", "permanent": true }
+    {
+      "source": "/app/",
+      "destination": "/app",
+      "permanent": false
+    },
+    {
+      "source": "/blog/",
+      "destination": "/blog",
+      "permanent": false
+    },
+    {
+      "source": "/home",
+      "destination": "/",
+      "permanent": true
+    }
   ],
   "headers": [
     {
       "source": "/(.*)",
       "headers": [
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "X-Frame-Options", "value": "SAMEORIGIN" },
-        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" }
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "SAMEORIGIN"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        }
       ]
     },
     {
       "source": "/vela.css",
       "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=86400" }
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=86400"
+        }
       ]
     }
   ]
