@@ -246,6 +246,22 @@ textarea.finput{resize:vertical;min-height:80px}
 .toast{position:fixed;bottom:22px;right:22px;background:var(--text);color:#fff;font-size:13px;font-weight:500;padding:10px 17px;border-radius:8px;z-index:9999;opacity:0;transform:translateY(6px);transition:all .2s;pointer-events:none;max-width:320px}
 .toast.show{opacity:1;transform:translateY(0)}
 @media(max-width:900px){.sb{display:none}.g2{grid-template-columns:1fr}.stats-row{grid-template-columns:1fr 1fr}.campaign-type-grid{grid-template-columns:1fr 1fr}.signal-grid{grid-template-columns:1fr}.mode-cards{grid-template-columns:1fr}}
+
+/* ── MODALS ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(3px)}
+.modal-box{background:var(--white);border-radius:14px;padding:28px;width:100%;max-width:460px;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.modal-title{font-size:17px;font-weight:800;letter-spacing:-.3px;color:var(--text);margin-bottom:6px}
+.modal-sub{font-size:13px;color:var(--t2);line-height:1.6;margin-bottom:20px}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:20px}
+.gmail-preview{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:16px;max-height:280px;overflow-y:auto;font-size:12px;color:var(--t2);line-height:1.7;white-space:pre-wrap;font-family:monospace}
+.mode-pill-toggle{flex:1;padding:14px;border-radius:8px;border:2px solid var(--border2);background:var(--white);cursor:pointer;transition:all .15s;text-align:center}
+.mode-pill-toggle:hover{border-color:var(--abdr)}
+.mode-pill-toggle.active-b2b{border-color:var(--purple);background:var(--pbg)}
+.mode-pill-toggle.active-b2c{border-color:var(--teal);background:var(--tbg)}
+.mode-pill-toggle-label{font-size:14px;font-weight:700;display:block;margin-bottom:3px}
+.mode-pill-toggle-sub{font-size:12px;color:var(--t3)}
+.mode-pill-toggle.active-b2b .mode-pill-toggle-label{color:var(--ptxt)}
+.mode-pill-toggle.active-b2c .mode-pill-toggle-label{color:var(--ttxt)}
 </style>
 </head>
 
@@ -387,16 +403,23 @@ const PURCHASE_TRIGGERS=['Price drop / sale','Social proof / reviews','FOMO / li
 
 // API CALL
 async function callClaude(system,user,maxTokens=1000){
+  // Use demo key from auth-config.js if set, otherwise API unavailable
+  const apiKey = (typeof VELA_DEMO_KEY !== 'undefined' && VELA_DEMO_KEY && VELA_DEMO_KEY !== 'YOUR_ANTHROPIC_KEY_HERE')
+    ? VELA_DEMO_KEY : null;
+  if(!apiKey){
+    return `[Demo mode — add your Anthropic API key to auth-config.js to enable live generation.\n\nThis would generate a complete ${maxTokens > 1200 ? 'asset package' : maxTokens > 1100 ? 'strategy document' : 'QA review'} using your ${system.slice(0,60).split('\n')[0].replace('You are the dedicated AI marketing agent for ','')} repository context.]`;
+  }
   try{
     const r=await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',
-      headers:{'Content-Type':'application/json'},
+      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
       body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:maxTokens,system,messages:[{role:'user',content:user}]})
     });
     const d=await r.json();
     if(d.content&&d.content[0]&&d.content[0].text)return d.content[0].text;
-    return '[Demo mode — connect API key for live generation]';
-  }catch(e){return '[Demo mode — API not connected. In the live product this generates using your repository context.]';}
+    if(d.error)return `[API error: ${d.error.message}]`;
+    return '[No output returned — check API key and try again]';
+  }catch(e){return `[Network error: ${e.message}]`;}
 }
 
 // PROMPT BUILDERS
@@ -1214,7 +1237,7 @@ function SmartChannelSelector({repo,signal,onConfirm}){
 }
 
 // CAMPAIGN BUILDER
-function CampaignBuilder({repo,onSave,onBack}){
+function CampaignBuilder({repo,onSave,onBack,onGmailPush}){
   const isB2B=repo.mode==='b2b';
   const CTYPES=isB2B?CAMPAIGN_TYPES_B2B:CAMPAIGN_TYPES_B2C;
   const [stage,setStage]=useState('signal');
@@ -1481,7 +1504,7 @@ function CampaignBuilder({repo,onSave,onBack}){
           React.createElement('div',{style:{fontSize:18,fontWeight:800,color:'var(--text)',marginBottom:6}},'Production ready'),
           React.createElement('div',{style:{fontSize:14,color:'var(--t2)',marginBottom:20}},'Strategy reviewed · assets built · QA cleared · ready to deploy.'),
           React.createElement('div',{style:{display:'flex',gap:10,justifyContent:'center',flexWrap:'wrap'}},
-            React.createElement('button',{className:'btn bp',onClick:()=>showToast('Gmail push available on Enterprise plan.')},'Push to Gmail'),
+            React.createElement('button',{className:'btn bp',onClick:()=>onGmailPush(assets)},'Push to Gmail'),
             React.createElement('button',{className:'btn bo',onClick:()=>copy(assets)},React.createElement(IcoCopy),' Copy all assets'),
             React.createElement('button',{className:'btn bgreen',onClick:()=>{onSave({name:signal.campaign_name,type:signal.campaign_type,channels:confirmedChannels,strategy,assets,qa:qaResult,mode:repo.mode,date:new Date().toLocaleDateString('en-US',{month:'short',day:'numeric'})});showToast('Saved to library');}},React.createElement(IcoCheck),' Save to library')
           )
@@ -1689,6 +1712,57 @@ function Repository({repo}){
   );
 }
 
+
+// ── MODE TOGGLE MODAL ─────────────────────────────────────────────────────
+function ModeToggleModal({currentMode, onConfirm, onClose}){
+  const [sel,setSel]=useState(currentMode);
+  const changed=sel!==currentMode;
+  return React.createElement('div',{className:'modal-overlay',onClick:e=>{if(e.target.className==='modal-overlay')onClose();}},
+    React.createElement('div',{className:'modal-box'},
+      React.createElement('div',{className:'modal-title'},'Switch workspace mode'),
+      React.createElement('div',{className:'modal-sub'},'This changes your campaign types, channels, onboarding fields, and agent behaviour. Your repository company info and brand voice are preserved. Campaigns already built stay in your library.'),
+      React.createElement('div',{style:{display:'flex',gap:10,marginBottom:4}},
+        React.createElement('div',{className:`mode-pill-toggle ${sel==='b2b'?'active-b2b':''}`,onClick:()=>setSel('b2b')},
+          React.createElement('span',{className:'mode-pill-toggle-label',style:{color:sel==='b2b'?'var(--ptxt)':'var(--text)'}},'B2B'),
+          React.createElement('span',{className:'mode-pill-toggle-sub'},'Business buyers')
+        ),
+        React.createElement('div',{className:`mode-pill-toggle ${sel==='b2c'?'active-b2c':''}`,onClick:()=>setSel('b2c')},
+          React.createElement('span',{className:'mode-pill-toggle-label',style:{color:sel==='b2c'?'var(--ttxt)':'var(--text)'}},'B2C'),
+          React.createElement('span',{className:'mode-pill-toggle-sub'},'Individual consumers')
+        )
+      ),
+      changed&&React.createElement('div',{className:'info-box info-accent',style:{marginTop:12,marginBottom:0,fontSize:12}},'Switching will reload your campaign builder. Saved campaigns are not affected.'),
+      React.createElement('div',{className:'modal-actions'},
+        React.createElement('button',{className:'btn bo bsm',onClick:onClose},'Cancel'),
+        React.createElement('button',{className:`btn bsm ${changed?'bp':'bo'}`,disabled:!changed,onClick:()=>onConfirm(sel)},changed?'Switch to '+sel.toUpperCase():'No change')
+      )
+    )
+  );
+}
+
+// ── GMAIL PUSH MODAL ─────────────────────────────────────────────────────
+function GmailModal({assets,onClose}){
+  const copy=()=>{navigator.clipboard.writeText(assets||'').then(()=>showToast('Assets copied — paste into Gmail'));};
+  // Extract first email from assets for preview
+  const emailIdx=assets?assets.indexOf('EMAIL 1'):- 1;
+  const preview=emailIdx>-1?assets.slice(emailIdx,emailIdx+600):'No email sequence in this campaign.';
+  return React.createElement('div',{className:'modal-overlay',onClick:e=>{if(e.target.className==='modal-overlay')onClose();}},
+    React.createElement('div',{className:'modal-box'},
+      React.createElement('div',{className:'modal-title'},'Push to Gmail'),
+      React.createElement('div',{className:'modal-sub'},'Native Gmail integration ships on the Enterprise plan. For now, copy your assets and paste directly into Gmail or your email tool.'),
+      React.createElement('div',{className:'gmail-preview'},preview),
+      React.createElement('div',{style:{background:'var(--bbg)',border:'1px solid var(--bbdr)',borderRadius:8,padding:'12px 14px',fontSize:12,color:'var(--btxt)',marginBottom:16}},
+        React.createElement('strong',null,'Gmail integration (Enterprise): '),'Sequences push directly to Gmail Drafts, map to contact lists in HubSpot or Mailchimp, and fire on enrollment triggers. Available on the $799/mo plan.'
+      ),
+      React.createElement('div',{className:'modal-actions'},
+        React.createElement('button',{className:'btn bg bsm',onClick:onClose},'Close'),
+        React.createElement('button',{className:'btn bo bsm',onClick:copy},React.createElement(IcoCopy),' Copy assets'),
+        React.createElement('button',{className:'btn bp bsm',onClick:()=>showToast('Upgrade to Enterprise to unlock Gmail push.')},'Upgrade to Enterprise')
+      )
+    )
+  );
+}
+
 // APP SHELL
 function App(){
   const [screen,setScreen]=useState('mode');
@@ -1697,6 +1771,8 @@ function App(){
   const [campaigns,setCampaigns]=useState([]);
   const [nav,setNav]=useState('dashboard');
   const [building,setBuilding]=useState(false);
+  const [showModeToggle,setShowModeToggle]=useState(false);
+  const [gmailAssets,setGmailAssets]=useState(null);
 
   function handleModeSelect(m){setMode(m);setScreen('onboarding');}
   function handleComplete(data){setRepo(data);setScreen('app');setNav('dashboard');}
@@ -1753,19 +1829,55 @@ function App(){
     );
   }
 
-  if(building)return React.createElement('div',{className:'shell'},
+  if(building)// Render modals on top of app shell
+const modals=React.createElement(React.Fragment,null,
+  showModeToggle&&React.createElement(ModeToggleModal,{
+    currentMode:repo?.mode||mode,
+    onConfirm:(newMode)=>{
+      setRepo(r=>({...r,mode:newMode}));
+      setMode(newMode);
+      setBuilding(false);
+      setShowModeToggle(false);
+      showToast('Switched to '+newMode.toUpperCase()+' mode');
+    },
+    onClose:()=>setShowModeToggle(false)
+  }),
+  gmailAssets&&React.createElement(GmailModal,{
+    assets:gmailAssets,
+    onClose:()=>setGmailAssets(null)
+  })
+);
+return React.createElement(React.Fragment,null,modals,React.createElement('div',{className:'shell'},
     React.createElement(Sidebar),
     React.createElement('div',{className:'main'},
       React.createElement('div',{className:'mhdr'},
         React.createElement('div',null,React.createElement('div',{className:'mhdr-title'},titles.build.t),React.createElement('div',{className:'mhdr-sub'},titles.build.s))
       ),
       React.createElement('div',{style:{flex:1,overflowY:'auto'}},
-        React.createElement(CampaignBuilder,{repo,onSave:(c)=>{saveCampaign(c);setBuilding(false);setNav('library');},onBack:()=>{setBuilding(false);setNav('dashboard');}})
+        React.createElement(CampaignBuilder,{repo,onSave:(c)=>{saveCampaign(c);setBuilding(false);setNav('library');},onBack:()=>{setBuilding(false);setNav('dashboard');},onGmailPush:(a)=>setGmailAssets(a)})
       )
     )
   );
 
-  return React.createElement('div',{className:'shell'},
+  // Render modals on top of app shell
+const modals=React.createElement(React.Fragment,null,
+  showModeToggle&&React.createElement(ModeToggleModal,{
+    currentMode:repo?.mode||mode,
+    onConfirm:(newMode)=>{
+      setRepo(r=>({...r,mode:newMode}));
+      setMode(newMode);
+      setBuilding(false);
+      setShowModeToggle(false);
+      showToast('Switched to '+newMode.toUpperCase()+' mode');
+    },
+    onClose:()=>setShowModeToggle(false)
+  }),
+  gmailAssets&&React.createElement(GmailModal,{
+    assets:gmailAssets,
+    onClose:()=>setGmailAssets(null)
+  })
+);
+return React.createElement(React.Fragment,null,modals,React.createElement('div',{className:'shell'},
     React.createElement(Sidebar),
     React.createElement('div',{className:'main'},
       React.createElement('div',{className:'mhdr'},
@@ -1782,7 +1894,7 @@ function App(){
         nav==='settings'&&React.createElement('div',{className:'card'},
           React.createElement('div',{style:{fontSize:15,fontWeight:700,marginBottom:16}},'Settings'),
           [{label:'Current plan',sub:'Free — 5 campaigns lifetime',action:()=>showToast('Upgrade flow in full product.'),btn:'Upgrade $79/mo',primary:true},
-           {label:'Mode',sub:isB2B?'B2B — business buyers':'B2C — individual consumers',action:()=>showToast('Contact support to change your workspace mode.'),btn:'Locked',primary:false},
+           {label:'Mode',sub:isB2B?'B2B — business buyers':'B2C — individual consumers',action:()=>setShowModeToggle(true),btn:'Switch mode',primary:false},
            {label:'Company',sub:repo?.company_name,action:()=>{setNav('repository');},btn:'Edit',primary:false},
            {label:'Reset demo',sub:'Return to mode selection',action:()=>{setScreen('mode');setMode(null);setRepo(null);setCampaigns([]);setBuilding(false);setNav('dashboard');},btn:'Reset',primary:false},
            {label:'Sign out',sub:'End your session and return to login',action:()=>{try{if(window._supabase){window._supabase.auth.signOut().then(function(){window.location.href='/login';});}else{window.location.href='/login';}}catch(e){window.location.href='/login';}},btn:'Sign out',primary:false}
@@ -1793,7 +1905,7 @@ function App(){
         )
       )
     )
-  );
+  ));
 }
 
 ReactDOM.render(React.createElement(App),document.getElementById('root'));
