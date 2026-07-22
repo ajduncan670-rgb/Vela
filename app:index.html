@@ -248,7 +248,44 @@ textarea.finput{resize:vertical;min-height:80px}
 @media(max-width:900px){.sb{display:none}.g2{grid-template-columns:1fr}.stats-row{grid-template-columns:1fr 1fr}.campaign-type-grid{grid-template-columns:1fr 1fr}.signal-grid{grid-template-columns:1fr}.mode-cards{grid-template-columns:1fr}}
 </style>
 </head>
+
 <body>
+<!-- Supabase auth guard — place inside body so DOM is ready -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/auth-config.js"></script>
+<script>
+(async function() {
+  // If auth-config.js hasn't set SUPABASE_URL yet, run in demo mode — don't block
+  if (typeof SUPABASE_URL === 'undefined' || SUPABASE_URL === 'YOUR_SUPABASE_PROJECT_URL') {
+    window.__VELA_USER = null;
+    return;
+  }
+  // Hide page until we know session state — prevents flash of app before redirect
+  document.documentElement.style.visibility = 'hidden';
+  try {
+    var r = await _supabase.auth.getSession();
+    var session = r && r.data && r.data.session;
+    if (!session) {
+      window.location.replace('/login');
+      return;
+    }
+    window.__VELA_USER = {
+      id:    session.user.id,
+      email: session.user.email,
+      name:  (session.user.user_metadata && session.user.user_metadata.full_name)
+               ? session.user.user_metadata.full_name
+               : session.user.email.split('@')[0],
+      mode:  (session.user.user_metadata && session.user.user_metadata.mode)
+               ? session.user.user_metadata.mode
+               : null
+    };
+  } catch(e) {
+    // Network error or Supabase down — let the app load in demo mode
+    window.__VELA_USER = null;
+  }
+  document.documentElement.style.visibility = 'visible';
+})();
+</script>
 <div id="root"></div>
 <div class="toast" id="toast"></div>
 <script type="text/babel">
@@ -1735,7 +1772,8 @@ function App(){
           [{label:'Current plan',sub:'Free — 5 campaigns lifetime',action:()=>showToast('Upgrade flow in full product.'),btn:'Upgrade $79/mo',primary:true},
            {label:'Mode',sub:isB2B?'B2B — business buyers':'B2C — individual consumers',action:()=>showToast('Contact support to change your workspace mode.'),btn:'Locked',primary:false},
            {label:'Company',sub:repo?.company_name,action:()=>{setNav('repository');},btn:'Edit',primary:false},
-           {label:'Reset demo',sub:'Return to mode selection',action:()=>{setScreen('mode');setMode(null);setRepo(null);setCampaigns([]);setBuilding(false);setNav('dashboard');},btn:'Reset',primary:false}
+           {label:'Reset demo',sub:'Return to mode selection',action:()=>{setScreen('mode');setMode(null);setRepo(null);setCampaigns([]);setBuilding(false);setNav('dashboard');},btn:'Reset',primary:false},
+           {label:'Sign out',sub:'End your session and return to login',action:()=>{try{if(window._supabase){window._supabase.auth.signOut().then(function(){window.location.href='/login';});}else{window.location.href='/login';}}catch(e){window.location.href='/login';}},btn:'Sign out',primary:false}
           ].map((r,i)=>React.createElement('div',{key:i,style:{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'13px 0',borderBottom:i<3?'1px solid var(--border)':'none'}},
             React.createElement('div',null,React.createElement('div',{style:{fontSize:13,fontWeight:600}},r.label),React.createElement('div',{style:{fontSize:12,color:'var(--t3)'}},r.sub)),
             React.createElement('button',{className:`btn bsm ${r.primary?'bp':'bo'}`,onClick:r.action,disabled:r.btn==='Locked'},r.btn)
