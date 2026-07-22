@@ -1,17 +1,25 @@
 {
   "cleanUrls": true,
   "trailingSlash": false,
+  "rewrites": [
+    {
+      "source": "/app",
+      "destination": "/app.html"
+    },
+    {
+      "source": "/app/(.*)",
+      "destination": "/app.html"
+    },
+    {
+      "source": "/blog",
+      "destination": "/blog.html"
+    },
+    {
+      "source": "/context-is-the-moat",
+      "destination": "/context-is-the-moat.html"
+    }
+  ],
   "redirects": [
-    {
-      "source": "/app/",
-      "destination": "/app",
-      "permanent": false
-    },
-    {
-      "source": "/blog/",
-      "destination": "/blog",
-      "permanent": false
-    },
     {
       "source": "/home",
       "destination": "/",
