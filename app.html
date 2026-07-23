@@ -1633,8 +1633,35 @@ function Library({campaigns,onNew}){
 }
 
 // REPOSITORY
-function Repository({repo}){
+function Repository({repo,onUpdate}){
   const isB2B=repo.mode==='b2b';
+  const [editing,setEditing]=useState(false);
+  const [draft,setDraft]=useState({});
+
+  function startEdit(){setDraft({...repo});setEditing(true);}
+  function cancelEdit(){setDraft({});setEditing(false);}
+  function saveEdit(){
+    const updated={...repo,...draft};
+    onUpdate(updated);
+    // Persist to Supabase user_metadata if available
+    if(typeof _supabase!=='undefined'&&_supabase){
+      _supabase.auth.updateUser({data:{repo:updated,onboarding_complete:true,mode:updated.mode}})
+        .catch(e=>console.log('[Vela] repo update error:',e.message));
+    }
+    setEditing(false);
+    showToast('Repository updated');
+  }
+  function setD(k,v){setDraft(p=>({...p,[k]:v}));}
+
+  const B2B_VOICE=['Professional','Direct','Technical','Authoritative','Challenger','Educational','Empathetic','Precise','Analytical','Confident'];
+  const B2C_VOICE=['Conversational','Bold','Playful','Inspirational','Empathetic','Relatable','Urgent','Aspirational','Witty','Warm','Energetic','Inclusive'];
+  const voiceOpts=isB2B?B2B_VOICE:B2C_VOICE;
+  const draftWords=draft.voice_words||[];
+  function toggleWord(w){
+    if(draftWords.includes(w)){setD('voice_words',draftWords.filter(x=>x!==w));}
+    else if(draftWords.length<3){setD('voice_words',[...draftWords,w]);}
+  }
+
   const health=[
     {label:'Company context',pct:repo.description?.length>100?90:55},
     {label:'Value proposition',pct:repo.value_prop?.length>60?90:40},
@@ -1646,6 +1673,178 @@ function Repository({repo}){
     {label:isB2B?'Approved sources':'Clinical / proof data',pct:repo.approved_sources?60:0},
   ];
   const overall=Math.round(health.reduce((a,h)=>a+h.pct,0)/health.length);
+
+  // ── EDIT MODE ──────────────────────────────────────────────────────────
+  if(editing){
+    return React.createElement('div',null,
+      React.createElement('div',{className:'card'},
+        React.createElement('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:20}},
+          React.createElement('div',null,
+            React.createElement('div',{style:{fontSize:15,fontWeight:700}},'Edit repository'),
+            React.createElement('div',{style:{fontSize:13,color:'var(--t2)',marginTop:2}},'Changes apply to all future campaigns immediately.')
+          ),
+          React.createElement('div',{style:{display:'flex',gap:8}},
+            React.createElement('button',{className:'btn bo bsm',onClick:cancelEdit},'Cancel'),
+            React.createElement('button',{className:'btn bp bsm',onClick:saveEdit},'Save changes')
+          )
+        ),
+
+        // Company
+        React.createElement('div',{className:'rsec'},
+          React.createElement('div',{className:'rsec-title'},'Company'),
+          React.createElement('div',{style:{display:'grid',gap:12}},
+            React.createElement('div',null,
+              React.createElement('label',{style:{fontSize:12,fontWeight:600,color:'var(--t2)',display:'block',marginBottom:4}},'Company name'),
+              React.createElement('input',{className:'finput',value:draft.company_name||'',onChange:e=>setD('company_name',e.target.value)})
+            ),
+            React.createElement('div',null,
+              React.createElement('label',{style:{fontSize:12,fontWeight:600,color:'var(--t2)',display:'block',marginBottom:4}},'Industry'),
+              React.createElement('input',{className:'finput',value:draft.industry||'',onChange:e=>setD('industry',e.target.value)})
+            ),
+            React.createElement('div',null,
+              React.createElement('label',{style:{fontSize:12,fontWeight:600,color:'var(--t2)',display:'block',marginBottom:4}},'Description'),
+              React.createElement('textarea',{className:'finput',rows:3,value:draft.description||'',onChange:e=>setD('description',e.target.value)})
+            ),
+            React.createElement('div',null,
+              React.createElement('label',{style:{fontSize:12,fontWeight:600,color:'var(--t2)',display:'block',marginBottom:4}},'Value proposition'),
+              React.createElement('textarea',{className:'finput',rows:2,value:draft.value_prop||'',onChange:e=>setD('value_prop',e.target.value)})
+            ),
+            React.createElement('div',null,
+              React.createElement('label',{style:{fontSize:12,fontWeight:600,color:'var(--t2)',display:'block',marginBottom:4}},'Key differentiators'),
+              React.createElement('textarea',{className:'finput',rows:2,value:draft.differentiators||'',onChange:e=>setD('differentiators',e.target.value)})
+            ),
+            React.createElement('div',null,
+              React.createElement('label',{style:{fontSize:12,fontWeight:600,color:'var(--t2)',display:'block',marginBottom:4}},isB2B?'Competitive context':'Market context'),
+              React.createElement('textarea',{className:'finput',rows:2,value:draft.competitive||'',onChange:e=>setD('competitive',e.target.value)})
+            ),
+            React.createElement('div',null,
+              React.createElement('label',{style:{fontSize:12,fontWeight:600,color:'var(--t2)',display:'block',marginBottom:4}},'Approved sources'),
+              React.createElement('input',{className:'finput',value:draft.approved_sources||'',onChange:e=>setD('approved_sources',e.target.value)})
+            )
+          )
+        ),
+
+        // Audience
+        React.createElement('div',{className:'rsec',style:{marginTop:20}},
+          React.createElement('div',{className:'rsec-title'},isB2B?'Buyer profile':'Customer profile'),
+          React.createElement('div',{style:{display:'grid',gap:12}},
+            isB2B?React.createElement(React.Fragment,null,
+              React.createElement('div',null,
+                React.createElement('label',{style:{fontSize:12,fontWeight:600,color:'var(--t2)',display:'block',marginBottom:4}},'Buyer title'),
+                React.createElement('input',{className:'finput',value:draft.persona_title||'',onChange:e=>setD('persona_title',e.target.value)})
+              ),
+              React.createElement('div',null,
+                React.createElement('label',{style:{fontSize:12,fontWeight:600,color:'var(--t2)',display:'block',marginBottom:4}},'Company size'),
+                React.createElement('input',{className:'finput',value:draft.persona_size||'',onChange:e=>setD('persona_size',e.target.value)})
+              ),
+              React.createElement('div',null,
+                React.createElement('label',{style:{fontSize:12,fontWeight:600,color:'var(--t2)',display:'block',marginBottom:4}},'Vertical'),
+                React.createElement('input',{className:'finput',value:draft.persona_industry||'',onChange:e=>setD('persona_industry',e.target.value)})
+              ),
+              React.createElement('div',null,
+                React.createElement('label',{style:{fontSize:12,fontWeight:600,color:'var(--t2)',display:'block',marginBottom:4}},'Buying committee'),
+                React.createElement('input',{className:'finput',value:draft.buying_committee||'',onChange:e=>setD('buying_committee',e.target.value)})
+              ),
+              React.createElement('div',null,
+                React.createElement('label',{style:{fontSize:12,fontWeight:600,color:'var(--t2)',display:'block',marginBottom:4}},'Deal cycle'),
+                React.createElement('input',{className:'finput',value:draft.deal_cycle||'',onChange:e=>setD('deal_cycle',e.target.value)})
+              ),
+              React.createElement('div',null,
+                React.createElement('label',{style:{fontSize:12,fontWeight:600,color:'var(--t2)',display:'block',marginBottom:4}},'Core business pain ✦'),
+                React.createElement('textarea',{className:'finput',rows:3,value:draft.persona_pain||'',onChange:e=>setD('persona_pain',e.target.value)})
+              ),
+              React.createElement('div',null,
+                React.createElement('label',{style:{fontSize:12,fontWeight:600,color:'var(--t2)',display:'block',marginBottom:4}},'Success metric'),
+                React.createElement('textarea',{className:'finput',rows:2,value:draft.persona_goals||'',onChange:e=>setD('persona_goals',e.target.value)})
+              )
+            ):React.createElement(React.Fragment,null,
+              React.createElement('div',null,
+                React.createElement('label',{style:{fontSize:12,fontWeight:600,color:'var(--t2)',display:'block',marginBottom:4}},'Customer descriptor'),
+                React.createElement('textarea',{className:'finput',rows:2,value:draft.customer_descriptor||'',onChange:e=>setD('customer_descriptor',e.target.value)})
+              ),
+              React.createElement('div',null,
+                React.createElement('label',{style:{fontSize:12,fontWeight:600,color:'var(--t2)',display:'block',marginBottom:4}},'Life stage'),
+                React.createElement('input',{className:'finput',value:draft.life_stage||'',onChange:e=>setD('life_stage',e.target.value)})
+              ),
+              React.createElement('div',null,
+                React.createElement('label',{style:{fontSize:12,fontWeight:600,color:'var(--t2)',display:'block',marginBottom:4}},'Shopping channels'),
+                React.createElement('input',{className:'finput',value:draft.shopping_channels||'',onChange:e=>setD('shopping_channels',e.target.value)})
+              ),
+              React.createElement('div',null,
+                React.createElement('label',{style:{fontSize:12,fontWeight:600,color:'var(--t2)',display:'block',marginBottom:4}},'Purchase trigger'),
+                React.createElement('input',{className:'finput',value:draft.purchase_trigger||'',onChange:e=>setD('purchase_trigger',e.target.value)})
+              ),
+              React.createElement('div',null,
+                React.createElement('label',{style:{fontSize:12,fontWeight:600,color:'var(--t2)',display:'block',marginBottom:4}},'Emotional driver ✦'),
+                React.createElement('textarea',{className:'finput',rows:3,value:draft.emotional_driver||'',onChange:e=>setD('emotional_driver',e.target.value)})
+              ),
+              React.createElement('div',null,
+                React.createElement('label',{style:{fontSize:12,fontWeight:600,color:'var(--t2)',display:'block',marginBottom:4}},'Aspiration'),
+                React.createElement('textarea',{className:'finput',rows:2,value:draft.aspiration||'',onChange:e=>setD('aspiration',e.target.value)})
+              ),
+              React.createElement('div',null,
+                React.createElement('label',{style:{fontSize:12,fontWeight:600,color:'var(--t2)',display:'block',marginBottom:4}},'Price point / positioning'),
+                React.createElement('input',{className:'finput',value:draft.price_point||'',onChange:e=>setD('price_point',e.target.value)})
+              )
+            )
+          )
+        ),
+
+        // Brand voice
+        React.createElement('div',{className:'rsec',style:{marginTop:20}},
+          React.createElement('div',{className:'rsec-title'},'Brand voice'),
+          React.createElement('div',{style:{display:'grid',gap:12}},
+            React.createElement('div',null,
+              React.createElement('label',{style:{fontSize:12,fontWeight:600,color:'var(--t2)',display:'block',marginBottom:8}},'Voice descriptors (max 3)'),
+              React.createElement('div',{style:{display:'flex',flexWrap:'wrap',gap:6}},
+                voiceOpts.map(w=>React.createElement('button',{
+                  key:w,
+                  onClick:()=>toggleWord(w),
+                  style:{
+                    padding:'4px 10px',fontSize:12,borderRadius:20,cursor:'pointer',border:'1px solid',
+                    background:draftWords.includes(w)?'var(--accent)':'transparent',
+                    color:draftWords.includes(w)?'#fff':'var(--text)',
+                    borderColor:draftWords.includes(w)?'var(--accent)':'var(--bdr)',
+                    opacity:(!draftWords.includes(w)&&draftWords.length>=3)?0.4:1
+                  }
+                },w))
+              )
+            ),
+            React.createElement('div',null,
+              React.createElement('label',{style:{fontSize:12,fontWeight:600,color:'var(--t2)',display:'block',marginBottom:4}},'Voice example (past copy to study)'),
+              React.createElement('textarea',{className:'finput',rows:3,value:draft.voice_example||'',onChange:e=>setD('voice_example',e.target.value)})
+            )
+          )
+        ),
+
+        // Guardrails
+        React.createElement('div',{className:'rsec',style:{marginTop:20}},
+          React.createElement('div',{className:'rsec-title'},'Guardrails'),
+          React.createElement('div',{style:{display:'grid',gap:12}},
+            React.createElement('div',null,
+              React.createElement('label',{style:{fontSize:12,fontWeight:600,color:'var(--t2)',display:'block',marginBottom:4}},'Forbidden words / phrases'),
+              React.createElement('input',{className:'finput',placeholder:'e.g. revolutionary, best-in-class, seamless',value:draft.avoid||'',onChange:e=>setD('avoid',e.target.value)})
+            ),
+            React.createElement('div',null,
+              React.createElement('label',{style:{fontSize:12,fontWeight:600,color:'var(--t2)',display:'block',marginBottom:4}},'Required disclaimers'),
+              React.createElement('input',{className:'finput',value:draft.required||'',onChange:e=>setD('required',e.target.value)})
+            ),
+            React.createElement('div',null,
+              React.createElement('label',{style:{fontSize:12,fontWeight:600,color:'var(--t2)',display:'block',marginBottom:4}},isB2B?'Regulatory context':'Platform / FTC rules'),
+              React.createElement('input',{className:'finput',value:draft.reg_context||'',onChange:e=>setD('reg_context',e.target.value)})
+            )
+          )
+        ),
+
+        React.createElement('div',{style:{display:'flex',gap:8,marginTop:20,justifyContent:'flex-end'}},
+          React.createElement('button',{className:'btn bo bsm',onClick:cancelEdit},'Cancel'),
+          React.createElement('button',{className:'btn bp bsm',onClick:saveEdit},'Save changes')
+        )
+      )
+    );
+  }
+
+  // ── READ MODE ──────────────────────────────────────────────────────────
   return React.createElement('div',null,
     React.createElement('div',{className:'card'},
       React.createElement('div',{style:{display:'flex',alignItems:'center',gap:16,marginBottom:16}},
@@ -1669,7 +1868,10 @@ function Repository({repo}){
       React.createElement('div',{className:'info-box info-blue',style:{marginTop:14,marginBottom:0}},'Upgrade to Solo to unlock document uploads. Add your brand guide, product docs, and past campaigns to push health above 85%.')
     ),
     React.createElement('div',{className:'card'},
-      React.createElement('div',{style:{fontSize:15,fontWeight:700,marginBottom:16}},'Repository contents'),
+      React.createElement('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:16}},
+        React.createElement('div',{style:{fontSize:15,fontWeight:700}},'Repository contents'),
+        React.createElement('button',{className:'btn bo bsm',onClick:startEdit},'Edit repository')
+      ),
       React.createElement('div',{className:'rsec'},
         React.createElement('div',{className:'rsec-title'},'Company'),
         [['Name',repo.company_name],['Industry',repo.industry],['Description',repo.description],repo.value_prop&&['Value prop',repo.value_prop],repo.differentiators&&['Differentiators',repo.differentiators]].filter(Boolean).filter(x=>x[1]).map(([l,v])=>React.createElement('div',{key:l,className:'ritem'},React.createElement('span',{className:'rlabel'},l),React.createElement('span',{className:'rval'},v)))
@@ -1771,8 +1973,29 @@ function App(){
   const [showModeToggle,setShowModeToggle]=useState(false);
   const [gmailAssets,setGmailAssets]=useState(null);
 
+  // Restore returning user — skip mode + onboarding if already completed
+  useEffect(()=>{
+    if(typeof _supabase==='undefined'||!_supabase)return; // demo mode
+    _supabase.auth.getSession().then(({data:{session}})=>{
+      if(!session)return;
+      const meta=session.user.user_metadata||{};
+      if(meta.onboarding_complete&&meta.repo&&meta.mode){
+        setMode(meta.mode);
+        setRepo(meta.repo);
+        setScreen('app');
+      }
+    }).catch(e=>console.log('[Vela] session restore error:',e.message));
+  },[]);
+
   function handleModeSelect(m){setMode(m);setScreen('onboarding');}
-  function handleComplete(data){setRepo(data);setScreen('app');setNav('dashboard');}
+  function handleComplete(data){
+    setRepo(data);setScreen('app');setNav('dashboard');
+    // Persist to Supabase user_metadata so returning users skip onboarding
+    if(typeof _supabase!=='undefined'&&_supabase){
+      _supabase.auth.updateUser({data:{onboarding_complete:true,mode:data.mode,repo:data}})
+        .catch(e=>console.log('[Vela] metadata write error:',e.message));
+    }
+  }
   function saveCampaign(c){setCampaigns(p=>[...p,c]);}
 
   const navItems=[
@@ -1870,7 +2093,7 @@ function App(){
       React.createElement('div',{className:'mbody'},
         nav==='dashboard'&&React.createElement(Dashboard,{repo,campaigns,onNew:()=>setBuilding(true)}),
         nav==='library'&&React.createElement(Library,{campaigns,onNew:()=>setBuilding(true)}),
-        nav==='repository'&&React.createElement(Repository,{repo}),
+        nav==='repository'&&React.createElement(Repository,{repo,onUpdate:(updated)=>{setRepo(updated);}}),
         nav==='settings'&&React.createElement('div',{className:'card'},
           React.createElement('div',{style:{fontSize:15,fontWeight:700,marginBottom:16}},'Settings'),
           [{label:'Current plan',sub:'Free — 5 campaigns lifetime',action:()=>showToast('Upgrade flow in full product.'),btn:'Upgrade $79/mo',primary:true},
