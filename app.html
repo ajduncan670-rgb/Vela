@@ -1973,16 +1973,38 @@ function App(){
   const [showModeToggle,setShowModeToggle]=useState(false);
   const [gmailAssets,setGmailAssets]=useState(null);
 
-  // Restore returning user — skip mode + onboarding if already completed
+  // Restore returning user — skip mode + onboarding, load campaigns from DB
   useEffect(()=>{
     if(typeof _supabase==='undefined'||!_supabase)return; // demo mode
-    _supabase.auth.getSession().then(({data:{session}})=>{
+    _supabase.auth.getSession().then(async({data:{session}})=>{
       if(!session)return;
       const meta=session.user.user_metadata||{};
       if(meta.onboarding_complete&&meta.repo&&meta.mode){
         setMode(meta.mode);
         setRepo(meta.repo);
         setScreen('app');
+        // Load campaigns from Supabase
+        try{
+          const {data,error}=await _supabase
+            .from('campaigns')
+            .select('*')
+            .order('created_at',{ascending:true});
+          if(error)throw error;
+          if(data&&data.length>0){
+            // Rehydrate into the same shape the app expects
+            setCampaigns(data.map(r=>({
+              id:r.id,
+              name:r.name,
+              type:r.type,
+              mode:r.mode,
+              channels:r.channels||[],
+              strategy:r.strategy||'',
+              assets:r.assets||'',
+              qa:r.qa||'',
+              date:new Date(r.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric'})
+            })));
+          }
+        }catch(e){console.log('[Vela] campaign load error:',e.message);}
       }
     }).catch(e=>console.log('[Vela] session restore error:',e.message));
   },[]);
@@ -1996,7 +2018,32 @@ function App(){
         .catch(e=>console.log('[Vela] metadata write error:',e.message));
     }
   }
-  function saveCampaign(c){setCampaigns(p=>[...p,c]);}
+  async function saveCampaign(c){
+    // Optimistic update — show in UI immediately
+    setCampaigns(p=>[...p,c]);
+    // Persist to Supabase
+    if(typeof _supabase!=='undefined'&&_supabase){
+      try{
+        const {data:userData}=await _supabase.auth.getUser();
+        if(!userData?.user)return;
+        const {error}=await _supabase.from('campaigns').insert({
+          user_id:userData.user.id,
+          name:c.name,
+          type:c.type,
+          mode:c.mode,
+          channels:c.channels||[],
+          strategy:c.strategy||'',
+          assets:c.assets||'',
+          qa:c.qa||''
+          // created_at and id are set by Supabase automatically
+        });
+        if(error)throw error;
+      }catch(e){
+        console.log('[Vela] campaign save error:',e.message);
+        showToast('Campaign saved locally — sync error, will retry.');
+      }
+    }
+  }
 
   const navItems=[
     {id:'dashboard',label:'Dashboard',I:IcoHome},
