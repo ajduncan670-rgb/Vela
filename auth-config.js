@@ -6,7 +6,7 @@ const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFz
 // 2. Anthropic API key — enables live AI generation in the app
 //    Find at: console.anthropic.com → API Keys
 //    Safe for demo use. For production, use a backend proxy instead.
-const VELA_DEMO_KEY = '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';
+const VELA_DEMO_KEY = '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';
 
 // ─── DO NOT EDIT BELOW THIS LINE ─────────────────────────────
 var _supabase = null;
