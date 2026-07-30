@@ -1,5 +1,5 @@
 -- ─────────────────────────────────────────────────────────────
--- VELA — Supabase Campaign Persistence Schema
+-- Vorsa — Supabase Campaign Persistence Schema
 -- Run this in: Supabase Dashboard → SQL Editor → New query
 -- ─────────────────────────────────────────────────────────────
 

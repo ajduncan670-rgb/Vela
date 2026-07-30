@@ -401,8 +401,8 @@ const PURCHASE_TRIGGERS=['Price drop / sale','Social proof / reviews','FOMO / li
 // API CALL
 async function callClaude(system,user,maxTokens=1000){
   // Use demo key from auth-config.js if set, otherwise API unavailable
-  const apiKey = (typeof VELA_DEMO_KEY !== 'undefined' && VELA_DEMO_KEY && VELA_DEMO_KEY !== 'YOUR_ANTHROPIC_KEY_HERE')
-    ? VELA_DEMO_KEY : null;
+  const apiKey = (typeof Vorsa_DEMO_KEY !== 'undefined' && Vorsa_DEMO_KEY && Vorsa_DEMO_KEY !== 'YOUR_ANTHROPIC_KEY_HERE')
+    ? Vorsa_DEMO_KEY : null;
   if(!apiKey){
     return `[Demo mode — add your Anthropic API key to auth-config.js to enable live generation.\n\nThis would generate a complete ${maxTokens > 1200 ? 'asset package' : maxTokens > 1100 ? 'strategy document' : 'QA review'} using your ${system.slice(0,60).split('\n')[0].replace('You are the dedicated AI marketing agent for ','')} repository context.]`;
   }
