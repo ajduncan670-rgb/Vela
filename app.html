@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Vela — Command Center</title>
+<title>Vorsa Studio — Command Center</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.development.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.development.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
@@ -271,25 +271,25 @@ textarea.finput{resize:vertical;min-height:80px}
 <script src="/auth-config.js"></script>
 <script>
 (function() {
-  console.log('[Vela] Guard running. _supabase:', typeof _supabase);
+  console.log('[Vorsa] Guard running. _supabase:', typeof _supabase);
 
   // Always show the page — no hiding, no redirecting for now
-  window.__VELA_USER = null;
+  window.__VORSA_USER = null;
 
   if (!_supabase) {
-    console.log('[Vela] No Supabase client — demo mode');
+    console.log('[Vorsa] No Supabase client — demo mode');
     return;
   }
 
   // Try to get session and log whatever we find
   _supabase.auth.getSession().then(function(result) {
-    console.log('[Vela] getSession result:', JSON.stringify({
+    console.log('[Vorsa] getSession result:', JSON.stringify({
       hasSession: !!(result && result.data && result.data.session),
       error: result && result.error ? result.error.message : null
     }));
     var session = result && result.data && result.data.session;
     if (session) {
-      window.__VELA_USER = {
+      window.__VORSA_USER = {
         id:    session.user.id,
         email: session.user.email,
         name:  (session.user.user_metadata && session.user.user_metadata.full_name)
@@ -297,17 +297,17 @@ textarea.finput{resize:vertical;min-height:80px}
                  : session.user.email.split('@')[0],
         mode:  (session.user.user_metadata && session.user.user_metadata.mode) || null
       };
-      console.log('[Vela] User set:', window.__VELA_USER.email);
+      console.log('[Vorsa] User set:', window.__VORSA_USER.email);
     } else {
-      console.log('[Vela] No session found');
+      console.log('[Vorsa] No session found');
     }
   }).catch(function(e) {
-    console.log('[Vela] getSession error:', e.message);
+    console.log('[Vorsa] getSession error:', e.message);
   });
 
   // Also listen for auth state changes and log them
   _supabase.auth.onAuthStateChange(function(event, session) {
-    console.log('[Vela] onAuthStateChange:', event, 'session:', !!session);
+    console.log('[Vorsa] onAuthStateChange:', event, 'session:', !!session);
   });
 })();
 </script>
@@ -318,7 +318,7 @@ const { useState, useRef, useEffect, useCallback } = React;
 function showToast(msg,dur=3000){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);}
 
 // ICONS
-function VelaLogo(){return React.createElement('svg',{width:12,height:12,viewBox:'0 0 14 14',fill:'white'},React.createElement('path',{d:'M7 1L13 7L7 13L1 7L7 1Z'}))}
+function VorsaLogo(){return React.createElement('svg',{width:14,height:14,viewBox:'0 0 14 14',fill:'none'},React.createElement('path',{d:'M1 2L5 12L7 7.5L9 12L13 2',stroke:'white',strokeWidth:2.2,strokeLinecap:'round',strokeLinejoin:'round'}))}
 function IcoHome(){return React.createElement('svg',{width:15,height:15,viewBox:'0 0 15 15',fill:'none',stroke:'currentColor',strokeWidth:1.4,strokeLinejoin:'round'},React.createElement('path',{d:'M2 6.5L7.5 2L13 6.5V13H10V9.5H5V13H2V6.5Z'}))}
 function IcoCampaign(){return React.createElement('svg',{width:15,height:15,viewBox:'0 0 15 15',fill:'none',stroke:'currentColor',strokeWidth:1.4},React.createElement('rect',{x:1.5,y:3,width:12,height:9,rx:1.5}),React.createElement('path',{d:'M5 3V2M10 3V2M1.5 6.5H13.5'}))}
 function IcoRepo(){return React.createElement('svg',{width:15,height:15,viewBox:'0 0 15 15',fill:'none',stroke:'currentColor',strokeWidth:1.3},React.createElement('rect',{x:2,y:2,width:4,height:4,rx:.8}),React.createElement('rect',{x:9,y:2,width:4,height:4,rx:.8}),React.createElement('rect',{x:2,y:9,width:4,height:4,rx:.8}),React.createElement('rect',{x:9,y:9,width:4,height:4,rx:.8,opacity:.4,strokeDasharray:'1.5 1'}))}
@@ -759,7 +759,7 @@ function ModeSelector({onSelect}){
   return React.createElement('div',{className:'mode-wrap'},
     React.createElement('div',{style:{height:54,display:'flex',alignItems:'center',padding:'0 24px',borderBottom:'1px solid var(--border)',background:'var(--white)'}},
       React.createElement('div',{style:{display:'flex',alignItems:'center',gap:8,fontWeight:800,fontSize:15,letterSpacing:'-.4px'}},
-        React.createElement('div',{className:'sb-mark'},React.createElement(VelaLogo)),' Vela'
+        React.createElement('div',{className:'sb-mark'},React.createElement(VorsaLogo)),' Vorsa Studio'
       )
     ),
     React.createElement('div',{className:'mode-body'},
@@ -850,7 +850,7 @@ function Onboarding({mode,onComplete}){
     // Sticky nav
     React.createElement('div',{style:{position:'sticky',top:0,zIndex:10,background:'rgba(250,248,244,.92)',backdropFilter:'blur(12px)',borderBottom:'1px solid var(--border)',height:54,display:'flex',alignItems:'center',padding:'0 24px'}},
       React.createElement('div',{style:{display:'flex',alignItems:'center',gap:8,fontWeight:800,fontSize:15,letterSpacing:'-.4px'}},
-        React.createElement('div',{className:'sb-mark'},React.createElement(VelaLogo)),' Vela',modeBadge
+        React.createElement('div',{className:'sb-mark'},React.createElement(VorsaLogo)),' Vorsa Studio',modeBadge
       )
     ),
     // Header
@@ -1646,7 +1646,7 @@ function Repository({repo,onUpdate}){
     // Persist to Supabase user_metadata if available
     if(typeof _supabase!=='undefined'&&_supabase){
       _supabase.auth.updateUser({data:{repo:updated,onboarding_complete:true,mode:updated.mode}})
-        .catch(e=>console.log('[Vela] repo update error:',e.message));
+        .catch(e=>console.log('[Vorsa] repo update error:',e.message));
     }
     setEditing(false);
     showToast('Repository updated');
@@ -2004,9 +2004,9 @@ function App(){
               date:new Date(r.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric'})
             })));
           }
-        }catch(e){console.log('[Vela] campaign load error:',e.message);}
+        }catch(e){console.log('[Vorsa] campaign load error:',e.message);}
       }
-    }).catch(e=>console.log('[Vela] session restore error:',e.message));
+    }).catch(e=>console.log('[Vorsa] session restore error:',e.message));
   },[]);
 
   function handleModeSelect(m){setMode(m);setScreen('onboarding');}
@@ -2015,7 +2015,7 @@ function App(){
     // Persist to Supabase user_metadata so returning users skip onboarding
     if(typeof _supabase!=='undefined'&&_supabase){
       _supabase.auth.updateUser({data:{onboarding_complete:true,mode:data.mode,repo:data}})
-        .catch(e=>console.log('[Vela] metadata write error:',e.message));
+        .catch(e=>console.log('[Vorsa] metadata write error:',e.message));
     }
   }
   async function saveCampaign(c){
@@ -2039,7 +2039,7 @@ function App(){
         });
         if(error)throw error;
       }catch(e){
-        console.log('[Vela] campaign save error:',e.message);
+        console.log('[Vorsa] campaign save error:',e.message);
         showToast('Campaign saved locally — sync error, will retry.');
       }
     }
@@ -2067,7 +2067,7 @@ function App(){
 
   function Sidebar(){
     return React.createElement('div',{className:'sb'},
-      React.createElement('div',{className:'sb-logo'},React.createElement('div',{className:'sb-mark'},React.createElement(VelaLogo)),' Vela'),
+      React.createElement('div',{className:'sb-logo'},React.createElement('div',{className:'sb-mark'},React.createElement(VorsaLogo)),' Vorsa Studio'),
       React.createElement('div',{className:'sb-scroll'},
         React.createElement('div',{className:`sb-mode-badge ${isB2B?'sb-mode-b2b':'sb-mode-b2c'}`},isB2B?'B2B mode':'B2C mode'),
         React.createElement('div',{className:'sb-sec',style:{marginTop:8}},'Workspace'),
