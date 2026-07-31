@@ -239,6 +239,7 @@ textarea.finput{resize:vertical;min-height:80px}
 .info-green{background:var(--gbg);border:1px solid var(--gbdr);color:var(--gtxt)}
 .signal-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 @keyframes spin{to{transform:rotate(360deg)}}
+@keyframes ping{0%{transform:scale(1);opacity:.4}70%{transform:scale(1.6);opacity:0}100%{transform:scale(1.6);opacity:0}}
 .spinner{width:14px;height:14px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}
 .spinner-dark{width:16px;height:16px;border:2px solid var(--bg3);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
 @keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
@@ -399,24 +400,45 @@ const LIFE_STAGES=['Gen Z (18-24)','Millennials (25-40)','Gen X (41-55)','Boomer
 const PURCHASE_TRIGGERS=['Price drop / sale','Social proof / reviews','FOMO / limited time','Seasonal need','Life event','Influencer recommendation','Search / discovery','Peer recommendation','Retargeting / reminder','First-time curiosity'];
 
 // API CALL
+// ── APPROVED MODEL — do not change without releasing a new version ──
+const VORSA_MODEL='claude-sonnet-4-6';
+// ── API ZONES — tried in order on 529 (overloaded) responses ──────
+const VORSA_ZONES=[
+  'https://api.anthropic.com',
+  'https://api.anthropic.com', // retry same zone first
+];
+
 async function callClaude(system,user,maxTokens=1000){
-  // Use demo key from auth-config.js if set, otherwise API unavailable
-  const apiKey = (typeof VELA_DEMO_KEY !== 'undefined' && VELA_DEMO_KEY && VELA_DEMO_KEY !== 'YOUR_ANTHROPIC_KEY_HERE')
-    ? VELA_DEMO_KEY : null;
+  const apiKey=(typeof VELA_DEMO_KEY!=='undefined'&&VELA_DEMO_KEY&&VELA_DEMO_KEY!=='YOUR_ANTHROPIC_KEY_HERE')
+    ?VELA_DEMO_KEY:null;
   if(!apiKey){
-    return `[Demo mode — add your Anthropic API key to auth-config.js to enable live generation.\n\nThis would generate a complete ${maxTokens > 1200 ? 'asset package' : maxTokens > 1100 ? 'strategy document' : 'QA review'} using your ${system.slice(0,60).split('\n')[0].replace('You are the dedicated AI marketing agent for ','')} repository context.]`;
+    return `[Demo mode — add your Anthropic API key to auth-config.js to enable live generation.\n\nThis would generate a complete ${maxTokens>1200?'asset package':maxTokens>1100?'strategy document':'QA review'} using your ${system.slice(0,60).split('\n')[0].replace('You are the dedicated AI marketing agent for ','')} repository context.]`;
   }
-  try{
-    const r=await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:maxTokens,system,messages:[{role:'user',content:user}]})
-    });
-    const d=await r.json();
-    if(d.content&&d.content[0]&&d.content[0].text)return d.content[0].text;
-    if(d.error)return `[API error: ${d.error.message}]`;
-    return '[No output returned — check API key and try again]';
-  }catch(e){return `[Network error: ${e.message}]`;}
+  const body=JSON.stringify({
+    model:VORSA_MODEL, // locked — never calls a different model
+    max_tokens:maxTokens,
+    system,
+    messages:[{role:'user',content:user}]
+  });
+  const headers={'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'};
+  // Zone failover — on 529 overloaded, wait 3s and retry up to 3 times
+  let lastError='';
+  for(let attempt=0;attempt<3;attempt++){
+    try{
+      if(attempt>0)await new Promise(r=>setTimeout(r,3000*attempt)); // backoff: 3s, 6s
+      const zone=VORSA_ZONES[Math.min(attempt,VORSA_ZONES.length-1)];
+      const r=await fetch(`${zone}/v1/messages`,{method:'POST',headers,body});
+      if(r.status===529){lastError='Servers busy — retrying...';continue;} // overloaded, try next zone
+      const d=await r.json();
+      if(d.content&&d.content[0]&&d.content[0].text)return d.content[0].text;
+      if(d.error){
+        if(d.error.type==='overloaded_error'){lastError='Overloaded';continue;}
+        return `[API error: ${d.error.message}]`;
+      }
+      return '[No output returned — check API key and try again]';
+    }catch(e){lastError=e.message;if(attempt<2)continue;}
+  }
+  return `[Generation failed after 3 attempts — ${lastError}. Please try again in a moment.]`;
 }
 
 // PROMPT BUILDERS
@@ -498,7 +520,7 @@ function buildChannelPrompt(repo,signal){
 ${isB2B?b2bChannels:b2cChannels}
 
 CAMPAIGN BRIEF:
-Type: ${signal.campaign_type}
+Type: ${Array.isArray(signal.campaign_type)?signal.campaign_type.join(', '):signal.campaign_type}
 Name: ${signal.campaign_name}
 Key message: ${signal.key_message}
 Goal: ${signal.goal}
@@ -525,7 +547,7 @@ function buildStrategyPrompt(repo,signal,channels){
 
 Produce a Campaign Strategy Document for this brief:
 
-Campaign type: ${signal.campaign_type}
+Campaign type: ${Array.isArray(signal.campaign_type)?signal.campaign_type.join(' + '):signal.campaign_type}
 Campaign name: ${signal.campaign_name}
 Channels: ${chList}
 Key message: ${signal.key_message}
@@ -535,7 +557,7 @@ Context: ${signal.context||'None'}
 
 # CAMPAIGN STRATEGY DOCUMENT
 ## ${signal.campaign_name}
-**Type:** ${signal.campaign_type} | **Channels:** ${chList} | **Status:** PENDING REVIEW
+**Type:** ${Array.isArray(signal.campaign_type)?signal.campaign_type.join(' + '):signal.campaign_type} | **Channels:** ${chList} | **Status:** PENDING REVIEW
 ---
 ## 1. EXECUTIVE SUMMARY
 Two to three sentences. What, who, and what we expect to achieve.
@@ -691,7 +713,7 @@ Talking points (optional use): [3-5 natural phrases that communicate brand benef
 Produce a complete production-ready asset package based on this approved strategy:
 ${strategy}
 
-CAMPAIGN: ${signal.campaign_name} | TYPE: ${signal.campaign_type} | KEY MESSAGE: ${signal.key_message}
+CAMPAIGN: ${signal.campaign_name} | TYPE: ${Array.isArray(signal.campaign_type)?signal.campaign_type.join(' + '):signal.campaign_type} | KEY MESSAGE: ${signal.key_message}
 
 Produce ALL assets below. Every asset complete, written, deployment-ready. No placeholders. No [INSERT X].
 
@@ -1234,6 +1256,42 @@ function SmartChannelSelector({repo,signal,onConfirm}){
 }
 
 // CAMPAIGN BUILDER
+function GeneratingOverlay({stage,messages=[]}){
+  const [msgIdx,setMsgIdx]=useState(0);
+  const [fade,setFade]=useState(true);
+  useEffect(()=>{
+    if(!messages.length)return;
+    const t=setInterval(()=>{
+      setFade(false);
+      setTimeout(()=>{setMsgIdx(i=>(i+1)%messages.length);setFade(true);},300);
+    },2800);
+    return()=>clearInterval(t);
+  },[messages.length]);
+  const stageLabel={strategy:'Building strategy',assets:'Writing assets',qa:'Running QA review'}[stage]||'Working';
+  const stageColor={strategy:'var(--purple)',assets:'var(--accent)',qa:'var(--teal)'}[stage]||'var(--accent)';
+  return React.createElement('div',{style:{display:'flex',flexDirection:'column',alignItems:'center',gap:20,padding:'16px 0'}},
+    // Animated pulse ring
+    React.createElement('div',{style:{position:'relative',width:56,height:56}},
+      React.createElement('div',{style:{position:'absolute',inset:0,borderRadius:'50%',border:`2px solid ${stageColor}`,opacity:.2,animation:'ping 1.4s ease-out infinite'}}),
+      React.createElement('div',{style:{position:'absolute',inset:6,borderRadius:'50%',background:stageColor,opacity:.15}}),
+      React.createElement('div',{style:{position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center'}},
+        React.createElement('div',{style:{width:20,height:20,border:`2.5px solid ${stageColor}`,borderTopColor:'transparent',borderRadius:'50%',animation:'spin .8s linear infinite'}})
+      )
+    ),
+    React.createElement('div',{style:{textAlign:'center'}},
+      React.createElement('div',{style:{fontSize:14,fontWeight:600,color:'var(--text)',marginBottom:6}},stageLabel),
+      React.createElement('div',{style:{fontSize:13,color:'var(--t2)',minHeight:20,transition:'opacity .3s',opacity:fade?1:0}},
+        messages[msgIdx]||'Processing...'
+      )
+    ),
+    // Step dots
+    messages.length>0&&React.createElement('div',{style:{display:'flex',gap:6,marginTop:4}},
+      messages.map((_,i)=>React.createElement('div',{key:i,style:{width:6,height:6,borderRadius:'50%',background:i===msgIdx?stageColor:'var(--bg3)',transition:'background .3s'}}))
+    ),
+    React.createElement('div',{style:{fontSize:11,color:'var(--t3)',marginTop:8}},'This usually takes 15–30 seconds')
+  );
+}
+
 function CampaignBuilder({repo,onSave,onBack,onGmailPush}){
   const isB2B=repo.mode==='b2b';
   const CTYPES=isB2B?CAMPAIGN_TYPES_B2B:CAMPAIGN_TYPES_B2C;
@@ -1243,7 +1301,7 @@ function CampaignBuilder({repo,onSave,onBack,onGmailPush}){
   const [generating,setGenerating]=useState(false);
   const [reviewed,setReviewed]=useState(false);
   const [approved,setApproved]=useState(false);
-  const [signal,setSignal]=useState({campaign_name:'',campaign_type:'',channels:[],key_message:'',goal:'',persona_focus:'',timeline:'',context:''});
+  const [signal,setSignal]=useState({campaign_name:'',campaign_type:[],channels:[],key_message:'',goal:'',persona_focus:'',timeline:'',context:''});
   const [confirmedChannels,setConfirmedChannels]=useState([]);
   const [strategy,setStrategy]=useState('');
   const [assets,setAssets]=useState('');
@@ -1251,7 +1309,12 @@ function CampaignBuilder({repo,onSave,onBack,onGmailPush}){
   const [activeAssetTab,setActiveAssetTab]=useState('full');
 
   const setSig=(k,v)=>setSignal(p=>({...p,[k]:v}));
-  const toggleCT=t=>setSig('campaign_type',signal.campaign_type===t?'':t);
+  // Multi-select: toggle type in/out of array (max 3)
+  const toggleCT=t=>{
+    const cur=signal.campaign_type||[];
+    if(cur.includes(t)){setSig('campaign_type',cur.filter(x=>x!==t));}
+    else if(cur.length<3){setSig('campaign_type',[...cur,t]);}
+  };
 
   const advance=()=>{
     const next=STAGE_NEXT[stage];if(!next)return;
@@ -1260,22 +1323,45 @@ function CampaignBuilder({repo,onSave,onBack,onGmailPush}){
     setApproved(false);setReviewed(false);
   };
 
-  const canAdvanceSignal=signal.campaign_name.trim()&&signal.campaign_type&&confirmedChannels.length>0&&signal.key_message.trim()&&signal.goal.trim();
+  const canAdvanceSignal=signal.campaign_name.trim()&&signal.campaign_type.length>0&&confirmedChannels.length>0&&signal.key_message.trim()&&signal.goal.trim();
+
+  const [generatingStage,setGeneratingStage]=useState('');
+
+  const LOADING_MESSAGES={
+    strategy:[
+      'Analyzing your repository context...',
+      'Mapping campaign positioning...',
+      'Building messaging hierarchy...',
+      'Drafting strategy document...',
+    ],
+    assets:[
+      'Loading brand voice and guardrails...',
+      'Writing channel assets...',
+      'Applying voice calibration...',
+      'Finalizing production copy...',
+    ],
+    qa:[
+      'Running Round 1 — Brand & Voice...',
+      'Running Round 2 — Claims & Accuracy...',
+      'Running Round 3 — Conversion Effectiveness...',
+      'Preparing production clearance...',
+    ]
+  };
 
   async function genStrategy(){
-    setGenerating(true);
+    setGenerating(true);setGeneratingStage('strategy');
     const out=await callClaude(buildSys(repo),buildStrategyPrompt(repo,signal,confirmedChannels),1500);
-    setStrategy(out);setGenerating(false);advance();
+    setStrategy(out);setGenerating(false);setGeneratingStage('');advance();
   }
   async function genAssets(){
-    setGenerating(true);
+    setGenerating(true);setGeneratingStage('assets');
     const out=await callClaude(buildSys(repo),buildAssetPrompt(repo,signal,confirmedChannels,strategy),2000);
-    setAssets(out);setGenerating(false);advance();
+    setAssets(out);setGenerating(false);setGeneratingStage('');advance();
   }
   async function genQA(){
-    setGenerating(true);
+    setGenerating(true);setGeneratingStage('qa');
     const out=await callClaude(buildSys(repo),buildQAPrompt(repo,signal,confirmedChannels,assets),1500);
-    setQaResult(out);setGenerating(false);advance();
+    setQaResult(out);setGenerating(false);setGeneratingStage('');advance();
   }
 
   const qaStatus=qaResult.includes('FAIL')||qaResult.includes('HARD STOP')?'fail':qaResult.includes('CONDITIONAL')?'warn':qaResult.length>10?'pass':'';
@@ -1321,7 +1407,7 @@ function CampaignBuilder({repo,onSave,onBack,onGmailPush}){
           signal.campaign_name||'New campaign',
           React.createElement('span',{style:{fontSize:11,fontWeight:700,padding:'2px 8px',borderRadius:20,background:isB2B?'var(--pbg)':'var(--tbg)',color:isB2B?'var(--ptxt)':'var(--ttxt)',border:`1px solid ${isB2B?'var(--pbdr)':'var(--tbdr)'}`}},isB2B?'B2B':'B2C')
         ),
-        React.createElement('div',{style:{fontSize:12,color:'var(--t3)'}},signal.campaign_type||'Select a campaign type below')
+        React.createElement('div',{style:{fontSize:12,color:'var(--t3)'}},signal.campaign_type&&signal.campaign_type.length>0?(Array.isArray(signal.campaign_type)?signal.campaign_type.join(' + '):signal.campaign_type):'Select a campaign type below')
       ),
       stage==='ready'&&React.createElement('div',{style:{marginLeft:'auto'}},
         React.createElement('button',{className:'btn bp bsm',onClick:()=>{onSave({name:signal.campaign_name,type:signal.campaign_type,channels:confirmedChannels,strategy,assets,qa:qaResult,mode:repo.mode,date:new Date().toLocaleDateString('en-US',{month:'short',day:'numeric'})});showToast('Campaign saved to library');}},React.createElement(IcoCheck),' Save to library')
@@ -1339,10 +1425,13 @@ function CampaignBuilder({repo,onSave,onBack,onGmailPush}){
           React.createElement('input',{className:'finput',placeholder:isB2B?'e.g. FedNow Adoption — VP Finance Nurture Q3':'e.g. Summer Skin Reset — Lapsed Customer Win-Back',value:signal.campaign_name,onChange:e=>setSig('campaign_name',e.target.value)})
         ),
         React.createElement('div',{className:'fg'},
-          React.createElement('label',{className:'flabel'},'Campaign type'),
-          React.createElement('div',{className:'fhint'},'Select the type that best describes the primary motion.'),
+          React.createElement('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:4}},
+            React.createElement('label',{className:'flabel',style:{marginBottom:0}},'Campaign type'),
+            (signal.campaign_type||[]).length>0&&React.createElement('span',{style:{fontSize:11,fontWeight:600,color:'var(--atxt)',background:'var(--abg)',padding:'2px 8px',borderRadius:20,border:'1px solid var(--abdr)'}},`${signal.campaign_type.length} selected`)
+          ),
+          React.createElement('div',{className:'fhint'},'Select up to 3 — the AI will blend them into one unified campaign.'),
           React.createElement('div',{className:'campaign-type-grid'},
-            CTYPES.map(ct=>React.createElement('div',{key:ct.id,className:`ct-card ${signal.campaign_type===ct.id?'sel':''}`,onClick:()=>toggleCT(ct.id)},
+            CTYPES.map(ct=>React.createElement('div',{key:ct.id,className:`ct-card ${(signal.campaign_type||[]).includes(ct.id)?'sel':''}`,onClick:()=>toggleCT(ct.id),style:{opacity:((signal.campaign_type||[]).length>=3&&!(signal.campaign_type||[]).includes(ct.id))?0.35:1,transition:'opacity .15s'}},
               React.createElement('div',{className:'ct-label'},ct.label),
               React.createElement('div',{className:'ct-desc'},ct.desc)
             ))
@@ -1379,7 +1468,7 @@ function CampaignBuilder({repo,onSave,onBack,onGmailPush}){
         React.createElement('div',{className:'fg'},
           React.createElement('label',{className:'flabel'},'Channel recommendations'),
           confirmedChannels.length===0
-            ?(signal.campaign_type&&signal.key_message&&signal.goal
+            ?(signal.campaign_type&&signal.campaign_type.length>0&&signal.key_message&&signal.goal
               ?React.createElement(SmartChannelSelector,{repo,signal,onConfirm:chs=>{setConfirmedChannels(chs);setSig('channels',chs.map(c=>c.id));}})
               :React.createElement('div',{className:'info-box info-accent'},'Fill in the campaign type, key message, and goal above to unlock channel recommendations.')
             )
@@ -1409,8 +1498,13 @@ function CampaignBuilder({repo,onSave,onBack,onGmailPush}){
       )
     ),
 
+    // GENERATING OVERLAY — shown during any AI generation
+    generating&&React.createElement('div',{className:'card',style:{textAlign:'center',padding:'48px 24px'}},
+      React.createElement(GeneratingOverlay,{stage:generatingStage,messages:LOADING_MESSAGES[generatingStage]||[]})
+    ),
+
     // STRATEGY
-    activeTab==='strategy'&&React.createElement('div',null,
+    !generating&&activeTab==='strategy'&&React.createElement('div',null,
       strategy?React.createElement('div',null,
         React.createElement('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:14}},
           React.createElement('div',null,React.createElement('div',{style:{fontSize:14,fontWeight:700}},`Strategy — ${signal.campaign_name}`),React.createElement('div',{style:{fontSize:12,color:'var(--t3)',marginTop:2}},'Review and approve before generating assets.')),
@@ -1438,7 +1532,7 @@ function CampaignBuilder({repo,onSave,onBack,onGmailPush}){
     ),
 
     // ASSETS
-    activeTab==='assets'&&React.createElement('div',null,
+    !generating&&activeTab==='assets'&&React.createElement('div',null,
       assets?React.createElement('div',null,
         React.createElement('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:14}},
           React.createElement('div',null,React.createElement('div',{style:{fontSize:14,fontWeight:700}},'Asset package'),React.createElement('div',{style:{fontSize:12,color:'var(--t3)',marginTop:2}},confirmedChannels.map(c=>c.name).join(' · '))),
@@ -1464,7 +1558,7 @@ function CampaignBuilder({repo,onSave,onBack,onGmailPush}){
     ),
 
     // QA
-    activeTab==='qa'&&React.createElement('div',null,
+    !generating&&activeTab==='qa'&&React.createElement('div',null,
       qaResult?React.createElement('div',null,
         React.createElement('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:14}},
           React.createElement('div',null,React.createElement('div',{style:{fontSize:14,fontWeight:700}},'QA review'),React.createElement('div',{style:{fontSize:12,color:'var(--t3)',marginTop:2}},`Brand · accuracy · conversion · ${isB2B?'B2B':'B2C'} rules`)),
@@ -1492,7 +1586,7 @@ function CampaignBuilder({repo,onSave,onBack,onGmailPush}){
     ),
 
     // READY
-    activeTab==='ready'&&React.createElement('div',null,
+    !generating&&activeTab==='ready'&&React.createElement('div',null,
       React.createElement('div',{className:'card card-accent'},
         React.createElement('div',{style:{textAlign:'center',padding:'24px 0'}},
           React.createElement('div',{style:{width:56,height:56,background:'var(--green)',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',margin:'0 auto 16px'}},
@@ -1512,7 +1606,7 @@ function CampaignBuilder({repo,onSave,onBack,onGmailPush}){
         React.createElement('div',{className:'g2'},
           React.createElement('div',null,
             React.createElement('div',{style:{fontSize:11,fontWeight:700,letterSpacing:'.07em',textTransform:'uppercase',color:'var(--t3)',marginBottom:10}},'Brief'),
-            [{label:'Name',val:signal.campaign_name},{label:'Type',val:signal.campaign_type},{label:'Channels',val:confirmedChannels.map(c=>c.name).join(', ')},{label:'Goal',val:signal.goal}].map(r=>
+            [{label:'Name',val:signal.campaign_name},{label:'Type',val:Array.isArray(signal.campaign_type)?signal.campaign_type.join(', '):signal.campaign_type},{label:'Channels',val:confirmedChannels.map(c=>c.name).join(', ')},{label:'Goal',val:signal.goal}].map(r=>
               React.createElement('div',{key:r.label,style:{display:'flex',gap:10,padding:'6px 0',borderBottom:'1px solid var(--border)',fontSize:12}},
                 React.createElement('span',{style:{color:'var(--t3)',minWidth:70}},r.label),React.createElement('span',{style:{color:'var(--text)'}},r.val)
               )
