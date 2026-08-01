@@ -409,7 +409,10 @@ const VORSA_ZONES=[
 ];
 
 async function callClaude(system,user,maxTokens=1000){
-  const apiKey=(typeof VELA_DEMO_KEY!=='undefined'&&VELA_DEMO_KEY&&VELA_DEMO_KEY!=='YOUR_ANTHROPIC_KEY_HERE')
+  // Support both old (VELA_DEMO_KEY) and new (VORSA_DEMO_KEY) variable names
+  const apiKey=(typeof VORSA_DEMO_KEY!=='undefined'&&VORSA_DEMO_KEY&&VORSA_DEMO_KEY!=='YOUR_ANTHROPIC_KEY_HERE')
+    ?VORSA_DEMO_KEY
+    :(typeof VELA_DEMO_KEY!=='undefined'&&VELA_DEMO_KEY&&VELA_DEMO_KEY!=='YOUR_ANTHROPIC_KEY_HERE')
     ?VELA_DEMO_KEY:null;
   if(!apiKey){
     return `[Demo mode — add your Anthropic API key to auth-config.js to enable live generation.\n\nThis would generate a complete ${maxTokens>1200?'asset package':maxTokens>1100?'strategy document':'QA review'} using your ${system.slice(0,60).split('\n')[0].replace('You are the dedicated AI marketing agent for ','')} repository context.]`;
@@ -682,7 +685,7 @@ Headline: [Under 70 chars]
 Description: [What they get and why it matters — under 100 chars]
 
 Targeting note: [1-2 sentences on recommended audience — job title, seniority, industry based on repository persona]
-Sources used: [list or "No external statistics used"]``,
+Sources used: [list or "No external statistics used"]`,
     email:`## EMAIL SEQUENCE (B2C)
 ${isB2B?'':'3-5 emails. Benefit-first. Emotion before logic. Social proof wherever possible.'}
 ---
@@ -2592,12 +2595,13 @@ function App(){
   const [building,setBuilding]=useState(false);
   const [showModeToggle,setShowModeToggle]=useState(false);
   const [gmailAssets,setGmailAssets]=useState(null);
+  const [authChecked,setAuthChecked]=useState(typeof _supabase==='undefined'||!_supabase);
 
   // Restore returning user — skip mode + onboarding, load campaigns from DB
   useEffect(()=>{
-    if(typeof _supabase==='undefined'||!_supabase)return; // demo mode
+    if(typeof _supabase==='undefined'||!_supabase){setAuthChecked(true);return;} // demo mode
     _supabase.auth.getSession().then(async({data:{session}})=>{
-      if(!session)return;
+      if(!session){setAuthChecked(true);return;}
       const meta=session.user.user_metadata||{};
       if(meta.onboarding_complete&&meta.repo&&meta.mode){
         setMode(meta.mode);
@@ -2611,7 +2615,6 @@ function App(){
             .order('created_at',{ascending:true});
           if(error)throw error;
           if(data&&data.length>0){
-            // Rehydrate into the same shape the app expects
             setCampaigns(data.map(r=>({
               id:r.id,
               name:r.name,
@@ -2626,7 +2629,8 @@ function App(){
           }
         }catch(e){console.log('[Vorsa] campaign load error:',e.message);}
       }
-    }).catch(e=>console.log('[Vorsa] session restore error:',e.message));
+      setAuthChecked(true);
+    }).catch(e=>{console.log('[Vorsa] session restore error:',e.message);setAuthChecked(true);});
   },[]);
 
   function handleModeSelect(m){setMode(m);setScreen('onboarding');}
@@ -2678,6 +2682,19 @@ function App(){
     repository:{t:'Repository',s:'Your brand knowledge base'},
     settings:{t:'Settings',s:'Account and plan'},
   };
+
+  // Hold render until auth check resolves — prevents flash of wrong screen
+  if(!authChecked)return React.createElement('div',{style:{
+    display:'flex',alignItems:'center',justifyContent:'center',
+    height:'100vh',background:'var(--bg)',flexDirection:'column',gap:12
+  }},
+    React.createElement('div',{style:{
+      width:36,height:36,border:'3px solid var(--border2)',
+      borderTopColor:'var(--accent)',borderRadius:'50%',
+      animation:'spin 0.7s linear infinite'
+    }}),
+    React.createElement('div',{style:{fontSize:13,color:'var(--t3)',fontWeight:500}},'Loading Vorsa…')
+  );
 
   if(screen==='mode')return React.createElement(ModeSelector,{onSelect:handleModeSelect});
   if(screen==='onboarding')return React.createElement(Onboarding,{mode,onComplete:handleComplete});
@@ -2778,7 +2795,9 @@ function App(){
   ));
 }
 
-ReactDOM.render(React.createElement(App),document.getElementById('root'));
+// React 18 createRoot — ReactDOM.render is deprecated
+const _vorsaRoot = ReactDOM.createRoot(document.getElementById('root'));
+_vorsaRoot.render(React.createElement(App));
 </script>
 </body>
 </html>,
