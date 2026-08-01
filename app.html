@@ -488,7 +488,7 @@ AGENT RULES — B2C:
 - CTAs: action verb + specific outcome. Never "Shop now", "Learn more", or "Click here".`;
   const voice=`
 BRAND VOICE: ${repo.voice_words.join(', ')}
-${repo.voice_example?`VOICE EXAMPLE (study this rhythm and register exactly): "${repo.voice_example}"`:''}
+${(repo.voice_examples||[repo.voice_example]).filter(Boolean).length>0?`VOICE EXAMPLES (study these for rhythm, register, and sentence structure — each format trains a different muscle):\n${(repo.voice_examples||[repo.voice_example]).filter(Boolean).map((ex,i)=>`Example ${i+1}: "${ex}"`).join('\n')}`:''}
 
 GUARDRAILS:
 ${repo.avoid?`NEVER USE: ${repo.avoid}`:'No word restrictions.'}
@@ -501,21 +501,25 @@ ${repo.approved_sources?`Approved sources: ${repo.approved_sources}`:''}`;
 function buildChannelPrompt(repo,signal){
   const isB2B=repo.mode==='b2b';
   const b2bChannels=`Available B2B channels:
-- email_sequence: 5-email nurture sequence
-- linkedin_posts: 4 LinkedIn posts over 2 weeks
-- landing_page: Full landing page copy
-- battlecard: Sales battlecard for BDR team
-- cold_outreach: 3-email cold outreach sequence
-- event_follow_up: Post-event/webinar follow-up sequence`;
+- email_sequence: 5-email nurture sequence (best for: lead nurture, pipeline acceleration, re-engagement)
+- cold_outreach: 3-email cold outreach sequence (best for: net-new pipeline, ABM outbound)
+- linkedin_posts: 4 LinkedIn posts over 2 weeks (best for: thought leadership, brand awareness, warm pipeline)
+- linkedin_inmail: LinkedIn InMail sequence — 2 direct messages (best for: ABM, high-value single accounts, exec outreach)
+- linkedin_ads: LinkedIn Sponsored Content ad copy (best for: paid awareness, retargeting, ABM at scale)
+- google_ads: Google Search RSA — headlines + descriptions (best for: demand capture, competitor conquesting)
+- landing_page: Full landing page copy (best for: campaigns with a conversion destination)
+- battlecard: Sales battlecard for BDR/AE team (best for: sales enablement, competitive deals)
+- event_follow_up: Post-event/webinar follow-up sequence (best for: post-event pipeline conversion)`;
   const b2cChannels=`Available B2C channels:
-- email: Customer email sequence (3-5 emails)
-- instagram_captions: 4 Instagram post captions with hooks
-- tiktok_script: TikTok/Reels script (30-60 sec)
-- sms: 3 SMS messages for mobile subscribers
-- ad_copy: Paid ad copy (headline + body + CTA variants)
-- product_page: Product page copy (headline, bullets, description)
-- influencer_brief: Creator brief with talking points and guidelines`;
-  return `You are a campaign strategist for ${repo.company_name} (${repo.mode==='b2b'?'B2B':'B2C'}).
+- email: Customer email sequence 3-5 emails (best for: launches, retention, abandoned cart, win-back)
+- instagram_captions: 4 Instagram post captions with hooks (best for: brand awareness, product discovery, DTC)
+- tiktok_script: TikTok/Reels script 30-60 sec (best for: viral reach, Gen Z/Millennial, product demos)
+- sms: 3 SMS messages (best for: flash sales, cart recovery, loyalty — high-intent audience only)
+- meta_ads: Meta/Instagram paid ad copy — feed, story, and carousel variants (best for: paid acquisition, retargeting)
+- google_ads: Google Shopping + Search ad copy (best for: demand capture, high-intent buyers)
+- product_page: Product page copy (best for: launches, refresh, conversion rate optimization)
+- influencer_brief: Creator brief with talking points and FTC guidelines (best for: influencer campaigns, UGC)`;
+  return `You are a campaign channel strategist for ${repo.company_name} (${repo.mode==='b2b'?'B2B':'B2C'}).
 
 ${isB2B?b2bChannels:b2cChannels}
 
@@ -526,19 +530,20 @@ Key message: ${signal.key_message}
 Goal: ${signal.goal}
 ${signal.context?`Additional context: ${signal.context}`:''}
 
-Recommend the best channel mix for this campaign. Return ONLY valid JSON, no markdown, no explanation:
+Recommend the best channel mix. Return ONLY valid JSON, no markdown, no explanation:
 {
   "channels": [
     {
       "id": "channel_id",
       "name": "Display name",
       "role": "Primary|Supporting|Optional",
-      "rationale": "One sentence explaining why this channel fits this specific campaign"
+      "rationale": "One sentence explaining why this channel fits this specific campaign type and goal",
+      "best_practices": ["Deployment tip 1", "Deployment tip 2", "Deployment tip 3"]
     }
   ],
-  "strategy_note": "One sentence on how these channels work together"
+  "strategy_note": "One sentence on how these channels work together as a system"
 }
-Order channels by importance (Primary first). Max 4 channels. Only recommend channels that genuinely fit this campaign type and goal.`;
+Order by importance (Primary first). Max 4 channels. Only recommend channels that genuinely fit. best_practices: 3 specific, actionable deployment tips for this channel in this campaign context — not generic advice.`;
 }
 
 function buildStrategyPrompt(repo,signal,channels){
@@ -644,7 +649,40 @@ Suggested next step: [1-2 sentences for when to advance]`,
 Email 1 (Day 1): Immediate value recap + single ask
 Email 2 (Day 4): Relevant resource or case study
 Email 3 (Day 9): Decision trigger / next step
-Format same as email sequence above.`,
+Format same as email sequence above.,
+    linkedin_inmail:`## LINKEDIN INMAIL SEQUENCE
+2 InMail messages. Direct 1:1 outreach — higher intent than posts, higher cost per send, so every word must work.
+
+INMAIL 1 (Intro):
+Subject: [5-8 words. Specific to their role or situation. No generic "quick question."]
+Body: [Under 80 words. Open with a specific insight or observation about their industry/company, not a compliment. One clear ask — a reply, not a meeting. Close with genuine optionality.]
+
+INMAIL 2 (Follow-up, 5 days later):
+Subject: [Different angle from InMail 1. Reference something timely if possible.]
+Body: [Under 60 words. New angle, not a reminder that you sent InMail 1. Include one proof point or customer reference (no names). Easy opt-out.]
+
+Rules: Never open with "I hope this finds you well." No product dumps. No attachments. One ask per message.
+Sources used: [list or "No external statistics used"]`,
+    linkedin_ads:`## LINKEDIN ADS
+Sponsored Content copy for LinkedIn Campaign Manager.
+
+SINGLE IMAGE AD:
+Headline: [Under 70 chars. ICP-specific outcome or sharp insight — not your company name]
+Introductory text: [Under 150 chars. Problem-first. What's at stake for the reader.]
+Description: [Under 100 chars. Reinforces the outcome, adds credibility]
+CTA button: [Choose: Learn More / Download / Sign Up / Register / Request Demo]
+
+MESSAGE AD (formerly Sponsored InMail — for Campaign Manager):
+Subject: [Under 60 chars]
+Body: [Under 500 chars. Conversational, not corporate. One specific ask.]
+CTA button text: [3-5 words, action-specific]
+
+DOCUMENT AD (for gated content campaigns):
+Headline: [Under 70 chars]
+Description: [What they get and why it matters — under 100 chars]
+
+Targeting note: [1-2 sentences on recommended audience — job title, seniority, industry based on repository persona]
+Sources used: [list or "No external statistics used"]``,
     email:`## EMAIL SEQUENCE (B2C)
 ${isB2B?'':'3-5 emails. Benefit-first. Emotion before logic. Social proof wherever possible.'}
 ---
@@ -720,6 +758,258 @@ Produce ALL assets below. Every asset complete, written, deployment-ready. No pl
 ${selected}
 
 After each asset section: "Sources used: [list any statistics with named sources, or 'No external statistics used']"`;
+}
+
+// MECHANICAL SPEC VALIDATION — deterministic pre-pass before AI QA
+function runMechanicalPrePass(assets, channels, isB2B) {
+  const issues = [];
+  if (!assets) return issues;
+  const chIds = channels.map(ch => ch.id);
+
+  // Helper: count words in a string
+  const wc = s => s.trim().split(/\s+/).filter(Boolean).length;
+
+  // ── B2B email nurture: body 55-75 words, subject 4-7 words, no !, preview 85-100 chars ──
+  if (chIds.includes('email_sequence')) {
+    const blocks = assets.split(/##\s*EMAIL\s+\d/i).slice(1);
+    blocks.forEach((block, i) => {
+      const subM = block.match(/Subject[:\s]+(.+)/i);
+      if (subM) {
+        const sub = subM[1].trim();
+        const sw = wc(sub);
+        if (sw < 4) issues.push({asset:`Email ${i+1} subject`,issue:`${sw} words — minimum is 4`,severity:'MAJOR',fix:'Expand to 4-7 words.'});
+        if (sw > 7) issues.push({asset:`Email ${i+1} subject`,issue:`${sw} words — maximum is 7`,severity:'MAJOR',fix:'Tighten to 7 words or fewer.'});
+        if (sub.includes('!')) issues.push({asset:`Email ${i+1} subject`,issue:'Contains exclamation mark — spec prohibits this',severity:'HARD STOP',fix:'Remove exclamation mark.'});
+      }
+      const prevM = block.match(/Preview[:\s]+(.+)/i);
+      if (prevM) {
+        const pl = prevM[1].trim().length;
+        if (pl < 60) issues.push({asset:`Email ${i+1} preview`,issue:`${pl} chars — target 85-100`,severity:'MINOR',fix:'Expand preview to 85-100 characters.'});
+        if (pl > 110) issues.push({asset:`Email ${i+1} preview`,issue:`${pl} chars — over 100-char target`,severity:'MINOR',fix:'Shorten preview to 85-100 characters.'});
+      }
+      const bodyM = block.match(/Body[:\s]+([\s\S]*?)(?:CTA[:\s]|$)/i);
+      if (bodyM) {
+        const bw = wc(bodyM[1]);
+        if (bw > 75) issues.push({asset:`Email ${i+1} body`,issue:`${bw} words — hard cap is 75`,severity:'HARD STOP',fix:`Cut ${bw-75} word(s). Remove filler sentences, trim the ask.`});
+      }
+    });
+  }
+
+  // ── B2B cold outreach: <60 words per email, body must not open with "I" ──
+  if (chIds.includes('cold_outreach')) {
+    const section = assets.split(/##\s*COLD\s*OUTREACH/i)[1] || '';
+    const emails = section.split(/Email\s*\d/i).slice(1);
+    emails.forEach((block, i) => {
+      const body = block.replace(/Subject[:\s]+.+/i,'').trim();
+      const bw = wc(body);
+      if (bw > 60) issues.push({asset:`Cold Outreach Email ${i+1}`,issue:`${bw} words — hard cap is 60`,severity:'HARD STOP',fix:`Cut ${bw-60} word(s). Every sentence must earn its place.`});
+      const firstWord = body.split(/\s+/)[0]||'';
+      if (firstWord.replace(/[^a-zA-Z]/g,'').toLowerCase() === 'i') {
+        issues.push({asset:`Cold Outreach Email ${i+1}`,issue:'Body opens with "I" — prohibited in cold outreach',severity:'HARD STOP',fix:"Rewrite opening. Lead with the prospect's situation, not yourself."});
+      }
+    });
+  }
+
+  // ── B2C email: body cap 120 words ──
+  if (!isB2B && chIds.includes('email')) {
+    const blocks = assets.split(/##\s*EMAIL\s+\d/i).slice(1);
+    blocks.forEach((block, i) => {
+      const bw = wc(block);
+      if (bw > 120) issues.push({asset:`B2C Email ${i+1}`,issue:`${bw} words — hard cap is 120`,severity:'HARD STOP',fix:`Cut ${bw-120} word(s). Lead with desire, trim features.`});
+    });
+  }
+
+  // ── LinkedIn: 130-155 words, max 3 hashtags ──
+  if (chIds.includes('linkedin_posts')) {
+    const section = assets.split(/##\s*LINKEDIN/i)[1] || '';
+    const posts = section.split(/Post\s*\d|W\d+P\d+/i).slice(1);
+    posts.forEach((block, i) => {
+      const pw = wc(block);
+      if (pw > 160) issues.push({asset:`LinkedIn Post ${i+1}`,issue:`${pw} words — target is 130-155`,severity:'MAJOR',fix:`Trim ${pw-155} word(s). Cut weak middle sentences.`});
+      const tags = (block.match(/#\w+/g)||[]).length;
+      if (tags > 3) issues.push({asset:`LinkedIn Post ${i+1}`,issue:`${tags} hashtags — maximum is 3`,severity:'MAJOR',fix:`Remove ${tags-3} hashtag(s). Keep the most specific.`});
+    });
+  }
+
+  // ── SMS: <160 chars each, SMS 1 must have opt-out ──
+  if (chIds.includes('sms')) {
+    const section = assets.split(/##\s*SMS/i)[1] || '';
+    const msgs = section.split(/SMS\s*\d/i).slice(1);
+    msgs.forEach((msg, i) => {
+      const text = msg.trim().split('\n').filter(l=>l.trim())[0]||'';
+      if (text.length > 160) issues.push({asset:`SMS ${i+1}`,issue:`${text.length} chars — hard cap is 160`,severity:'HARD STOP',fix:`Cut ${text.length-160} character(s).`});
+    });
+    if (msgs.length > 0 && !/STOP/i.test(msgs[0])) {
+      issues.push({asset:'SMS 1',issue:'Missing opt-out instruction',severity:'HARD STOP',fix:'Add "Reply STOP to opt out" to SMS 1.'});
+    }
+  }
+
+  // ── Google RSA: headlines 30 chars, descriptions 90 chars ──
+  if (chIds.includes('ad_copy') || chIds.includes('google_ads')) {
+    const section = assets.split(/##\s*GOOGLE/i)[1] || '';
+    (section.match(/H\d[:\s]+(.+)/g)||[]).forEach((h,i)=>{
+      const t = h.replace(/H\d[:\s]+/,'').trim();
+      if (t.length>30) issues.push({asset:`Google Headline ${i+1}`,issue:`${t.length} chars — hard cap is 30`,severity:'HARD STOP',fix:`Cut ${t.length-30} character(s).`});
+    });
+    (section.match(/D\d[:\s]+(.+)/g)||[]).forEach((d,i)=>{
+      const t = d.replace(/D\d[:\s]+/,'').trim();
+      if (t.length>90) issues.push({asset:`Google Description ${i+1}`,issue:`${t.length} chars — hard cap is 90`,severity:'HARD STOP',fix:`Cut ${t.length-90} character(s).`});
+    });
+  }
+
+  // ── Meta ads: headline 40 chars, primary text 125 chars ──
+  if (chIds.includes('ad_copy') || chIds.includes('meta_ads')) {
+    const section = assets.split(/##\s*META|##\s*FACEBOOK/i)[1] || '';
+    if (section) {
+      const hM = section.match(/Headline[:\s]+(.+)/i);
+      if (hM && hM[1].trim().length>40) issues.push({asset:'Meta Headline',issue:`${hM[1].trim().length} chars — hard cap is 40`,severity:'HARD STOP',fix:'Cut to 40 characters.'});
+      const pM = section.match(/Primary text[:\s]+(.+)/i);
+      if (pM && pM[1].trim().length>125) issues.push({asset:'Meta Primary Text',issue:`${pM[1].trim().length} chars — hard cap is 125`,severity:'HARD STOP',fix:'Cut to 125 characters.'});
+    }
+  }
+
+  // ── Banned CTAs across all assets ──
+  ['Learn more','Click here','Submit','Find out more','Shop now'].forEach(cta=>{
+    if (new RegExp('\\b'+cta+'\\b','i').test(assets)) {
+      issues.push({asset:'All assets',issue:`Banned CTA: "${cta}"`,severity:'HARD STOP',fix:`Replace with action verb + specific outcome. e.g. "See the full breakdown" or "Book a 20-min call".`});
+    }
+  });
+
+  // ── B2B banned filler ──
+  if (isB2B) {
+    ['revolutionary','game-changing','best-in-class','seamless','synergize','robust','empower','cutting-edge','holistic'].forEach(w=>{
+      if (new RegExp('\\b'+w+'\\b','i').test(assets))
+        issues.push({asset:'All assets',issue:`Banned filler: "${w}"`,severity:'HARD STOP',fix:`Remove all instances. Replace with specific outcome or mechanism.`});
+    });
+  }
+
+  // ── B2C banned filler ──
+  if (!isB2B) {
+    ['amazing','incredible','life-changing','game-changing','must-have','revolutionary'].forEach(w=>{
+      if (new RegExp('\\b'+w+'\\b','i').test(assets))
+        issues.push({asset:'All assets',issue:`Banned filler: "${w}"`,severity:'HARD STOP',fix:`Remove all instances. Replace with specific proof or customer language.`});
+    });
+  }
+
+  return issues;
+}
+
+// DEPLOYMENT CHECKLIST — generated per confirmed channel set
+function buildDeploymentChecklist(channels, isB2B) {
+  const global = [
+    {label:'Legal & compliance sign-off obtained', done:false},
+    {label:'Brand/stakeholder approval confirmed', done:false},
+    {label:'UTM parameters set for all links', done:false},
+    {label:'Analytics tracking verified (goal fires on conversion)', done:false},
+    {label:'QA clearance documented', done:false},
+  ];
+
+  const channelChecks = {
+    email_sequence:[
+      'Sequence uploaded to ESP (Mailchimp, HubSpot, Klaviyo, etc.)',
+      'Enrollment trigger configured and tested',
+      'Send windows set (B2B: Tue–Thu, 8–10am recipient time)',
+      'From name and reply-to address confirmed',
+      'Plain-text version generated and tested',
+      'Unsubscribe link confirmed in every email',
+      'Test send to internal inbox reviewed on mobile',
+    ],
+    cold_outreach:[
+      'Sequence loaded into outreach tool (Apollo, Salesloft, Outreach)',
+      'Prospect list validated — titles, company size match ICP',
+      'Sending domain warmed (if new domain)',
+      'Daily send volume within tool limits',
+      'Reply handling and auto-pause on response configured',
+      'CAN-SPAM / GDPR compliance confirmed',
+    ],
+    linkedin_posts:[
+      'Posts scheduled in LinkedIn scheduler or buffer',
+      'Post 1 scheduled for Tuesday or Wednesday (peak B2B engagement)',
+      'Company page vs. personal profile posting decision confirmed',
+      'Images or link previews attached where relevant',
+      'Hashtags verified — max 3 per post',
+    ],
+    landing_page:[
+      'Page live and indexed (or noindex if gated)',
+      'Form connected to CRM / email list',
+      'Conversion event firing in analytics',
+      'Mobile layout reviewed',
+      'Page load speed checked (<3s)',
+      'Meta title and description set',
+    ],
+    battlecard:[
+      'Distributed to BDR / AE team via Slack or email',
+      'Added to sales enablement tool (Highspot, Seismic, Notion)',
+      'Discovery questions reviewed in team call',
+      'Version date noted for future updates',
+    ],
+    event_follow_up:[
+      'Attendee list segmented (attended vs. registered/no-show)',
+      'Follow-up sequence assigned to correct segment',
+      'Send timing: Day 1 email within 24h of event end',
+      'Calendar link or demo link confirmed live',
+    ],
+    email:[
+      'Sequence live in ESP',
+      'Flows tested end-to-end',
+      'From name and reply-to confirmed',
+      'Unsubscribe link in all emails',
+      'Mobile preview reviewed',
+      'Send timing optimized (B2C: Tue, Thu, Sun)',
+    ],
+    instagram_captions:[
+      'Captions copied into scheduling tool (Later, Planoly, etc.)',
+      'Images or video assets attached to each post',
+      'Alt text added for accessibility',
+      'Posting schedule set (2x/week minimum)',
+      'Stories or Reels cross-promotion planned',
+    ],
+    tiktok_script:[
+      'Script handed off to video team or creator',
+      'On-screen text overlays noted in production brief',
+      'Audio direction confirmed (original or trending audio)',
+      'Caption and hashtags ready for post upload',
+      'Posting time set (peak: 7–9pm weekday)',
+    ],
+    sms:[
+      'SMS list segmented and loaded into tool (Klaviyo, Attentive, Postscript)',
+      'Opt-in confirmation on all numbers',
+      'SMS 1 opt-out language confirmed ("Reply STOP to opt out")',
+      'Character counts verified (<160 per message)',
+      'Send time set (B2C SMS: 12–2pm or 7–8pm)',
+    ],
+    ad_copy:[
+      'Ad copy uploaded to Meta Ads Manager and/or Google Ads',
+      'Audience targeting set (custom audience, lookalike, or keyword)',
+      'Creative assets (images/video) attached',
+      'UTM parameters on all destination URLs',
+      'Conversion pixel confirmed firing on thank-you page',
+      'Budget and schedule set',
+      'A/B test configured if running variants',
+    ],
+    product_page:[
+      'Copy live on product page (Shopify, WooCommerce, etc.)',
+      'Meta title and description updated',
+      'Mobile layout reviewed',
+      'Product images confirmed',
+      'Add-to-cart flow tested end-to-end',
+    ],
+    influencer_brief:[
+      'Brief sent to all confirmed creators',
+      'Deliverables and deadlines confirmed in writing',
+      'FTC disclosure requirement (#ad / #sponsored) acknowledged by creator',
+      'Content approval step confirmed before posting',
+      'Tracking link or promo code assigned per creator',
+    ],
+  };
+
+  const items = channels.map(ch => ({
+    channel: ch.name,
+    id: ch.id,
+    checks: (channelChecks[ch.id] || [`Deploy ${ch.name} assets to relevant platform`, 'Confirm tracking is in place', 'Test before full launch']).map(t=>({label:t,done:false}))
+  }));
+
+  return {global, channels: items};
 }
 
 function buildQAPrompt(repo,signal,channels,assets){
@@ -844,7 +1134,7 @@ function Onboarding({mode,onComplete}){
     customer_descriptor:'',life_stage:'',shopping_channels:'',
     purchase_trigger:'',emotional_driver:'',aspiration:'',price_point:'',
     // Voice
-    voice_words:[],voice_example:'',
+    voice_words:[],voice_examples:['','','','',''],
     avoid:'',required:'',reg_context:'',
   });
   const set=(k,v)=>setD(p=>({...p,[k]:v}));
@@ -971,14 +1261,27 @@ function Onboarding({mode,onComplete}){
             React.createElement('input',{className:'finput',placeholder:'e.g. CFO (economic buyer), VP IT (technical approver), COO (operational champion)',value:d.buying_committee,onChange:e=>set('buying_committee',e.target.value)})
           ),
           React.createElement('div',{className:'fg'},
-            React.createElement('label',{className:'flabel'},'What problem keeps them up at night?'),
-            React.createElement('div',{className:'fhint'},'The most important field in the entire onboarding. Be operationally specific. A generic pain produces generic campaigns.'),
-            React.createElement('textarea',{className:'finput',rows:4,placeholder:"e.g. Month-end close takes 3+ days because the team manually matches hundreds of invoices across 4 different systems. The CFO can't see real cash position until Day 5 — by which time it's too late to act on any of it.",value:d.persona_pain,onChange:e=>set('persona_pain',e.target.value)})
+            React.createElement('label',{className:'flabel'},'What problem keeps them up at night? ',React.createElement('span',{style:{fontSize:11,fontWeight:700,padding:'2px 7px',borderRadius:20,background:'#fef3c7',color:'#92400e',marginLeft:4}},'Most important')),
+            React.createElement('div',{className:'fhint'},'The most important field in this entire setup. Name the system, the frequency, the downstream consequence. Generic pain produces generic campaigns.'),
+            React.createElement('div',{style:{background:'var(--bg)',border:'1px solid var(--border)',borderRadius:8,padding:'10px 12px',marginBottom:8}},
+              React.createElement('div',{style:{fontSize:11,fontWeight:700,color:'var(--t3)',textTransform:'uppercase',letterSpacing:'.06em',marginBottom:6}},'What good looks like'),
+              React.createElement('div',{style:{fontSize:12,color:'#166534',lineHeight:1.6,marginBottom:6}},
+                React.createElement('strong',null,'Strong: '),"Month-end close takes 3+ days because the team manually matches invoices across 4 systems. The CFO can't see real cash position until Day 5 — too late to act on it."
+              ),
+              React.createElement('div',{style:{fontSize:12,color:'#991b1b',lineHeight:1.6}},
+                React.createElement('strong',null,'Too vague: '),'They struggle with inefficiency and want to save time and improve their workflow.'
+              )
+            ),
+            React.createElement('textarea',{className:'finput',rows:4,placeholder:'Describe the operational reality — what breaks, how often, what it costs. Name the systems, people involved, downstream consequence.',value:d.persona_pain,onChange:e=>set('persona_pain',e.target.value)})
           ),
           React.createElement('div',{className:'fg'},
-            React.createElement('label',{className:'flabel'},'What does success look like for them? ',React.createElement('span',{style:{fontWeight:400,color:'var(--t3)'}},'— optional')),
-            React.createElement('div',{className:'fhint'},'The personal win, not just the business metric. What makes them a hero in their org?'),
-            React.createElement('textarea',{className:'finput',rows:3,placeholder:"e.g. Close in 2 days instead of 5. Have a real-time dashboard their board actually believes. Stop being the team that's always scrambling at board prep.",value:d.persona_goals,onChange:e=>set('persona_goals',e.target.value)})
+            React.createElement('label',{className:'flabel'},'What does success look like for them personally? ',React.createElement('span',{style:{fontWeight:400,color:'var(--t3)'}},'— optional')),
+            React.createElement('div',{className:'fhint'},'Not the business metric — the personal win. What makes them a hero in their org? This is what your copy should make them feel is possible.'),
+            React.createElement('div',{style:{background:'var(--bg)',border:'1px solid var(--border)',borderRadius:8,padding:'10px 12px',marginBottom:8}},
+              React.createElement('div',{style:{fontSize:11,fontWeight:700,color:'var(--t3)',textTransform:'uppercase',letterSpacing:'.06em',marginBottom:6}},'Think about it this way'),
+              React.createElement('div',{style:{fontSize:12,color:'var(--t2)',lineHeight:1.6}},'They walk into the board meeting with a live dashboard accurate as of this morning. CFO doesn\'t question the numbers. They leave looking like the person who fixed what nobody else could.')
+            ),
+            React.createElement('textarea',{className:'finput',rows:3,placeholder:"e.g. Close in 2 days instead of 5. Have a real-time dashboard their board believes. Stop being the team always scrambling at board prep.",value:d.persona_goals,onChange:e=>set('persona_goals',e.target.value)})
           )
         )
       ),
@@ -1019,9 +1322,14 @@ function Onboarding({mode,onComplete}){
             )
           ),
           React.createElement('div',{className:'fg'},
-            React.createElement('label',{className:'flabel'},'Emotional driver — what do they actually want?'),
-            React.createElement('div',{className:'fhint'},'The most important field. Not "clear skin" — what does clear skin mean to them? Confidence? Not having to think about it? Feeling like themselves again?'),
-            React.createElement('textarea',{className:'finput',rows:3,placeholder:"e.g. They want to feel like they have their life together. Clear skin without effort signals control — like they figured out something other people haven't. It's less about vanity, more about self-respect.",value:d.emotional_driver,onChange:e=>set('emotional_driver',e.target.value)})
+            React.createElement('label',{className:'flabel'},'Emotional driver — what do they actually want? ',React.createElement('span',{style:{fontSize:11,fontWeight:700,padding:'2px 7px',borderRadius:20,background:'#fef3c7',color:'#92400e',marginLeft:4}},'Most important')),
+            React.createElement('div',{className:'fhint'},'Go one layer deeper than the surface desire. Not \"clear skin\" — what does clear skin mean to them emotionally? This is what your copy speaks to.'),
+            React.createElement('div',{style:{background:'var(--bg)',border:'1px solid var(--border)',borderRadius:8,padding:'10px 12px',marginBottom:8}},
+              React.createElement('div',{style:{fontSize:11,fontWeight:700,color:'var(--t3)',textTransform:'uppercase',letterSpacing:'.06em',marginBottom:6}},'What good looks like'),
+              React.createElement('div',{style:{fontSize:12,color:'#166534',lineHeight:1.6,marginBottom:6}},React.createElement('strong',null,'Strong: '),"They want to feel like they have their life together. Clear skin without effort signals control — like they figured something out other people haven't. Less about vanity, more about self-respect."),
+              React.createElement('div',{style:{fontSize:12,color:'#991b1b',lineHeight:1.6}},React.createElement('strong',null,'Too vague: '),'They want to feel confident and look good.')
+            ),
+            React.createElement('textarea',{className:'finput',rows:3,placeholder:"Describe what the product makes them feel — not what it does. The transformation, the identity shift, the thing they'd tell a friend.",value:d.emotional_driver,onChange:e=>set('emotional_driver',e.target.value)})
           ),
           React.createElement('div',{className:'fg'},
             React.createElement('label',{className:'flabel'},'What do they aspire to? ',React.createElement('span',{style:{fontWeight:400,color:'var(--t3)'}},'— optional')),
@@ -1043,9 +1351,29 @@ function Onboarding({mode,onComplete}){
             d.voice_words.length>0&&React.createElement('div',{style:{marginTop:10,fontSize:12,color:'var(--t3)'}},`Selected: ${d.voice_words.join(', ')}`)
           ),
           React.createElement('div',{className:'fg'},
-            React.createElement('label',{className:'flabel'},'Paste an example of copy you love ',React.createElement('span',{style:{fontWeight:400,color:'var(--t3)'}},'— optional')),
-            React.createElement('div',{className:'fhint'},'An email that performed, a post that resonated, a tagline you\'re proud of. Your agent studies the rhythm and register — not just the words.'),
-            React.createElement('textarea',{className:'finput',rows:4,placeholder:isB2B?'"Your reconciliation process shouldn\'t take longer than your board prep. We give finance teams their time back — not through another dashboard, but by eliminating the work entirely."':'"You don\'t need a 12-step routine. You need three products that actually work. We spent two years formulating so you don\'t have to guess anymore."',value:d.voice_example,onChange:e=>set('voice_example',e.target.value)})
+            React.createElement('label',{className:'flabel'},'Voice examples ',React.createElement('span',{style:{fontWeight:400,color:'var(--t3)'}},'— paste copy your agent should study')),
+            React.createElement('div',{className:'fhint'},'Your agent studies these for rhythm, register, and sentence structure — not just words. Different formats train different muscles. Add at least one.'),
+            React.createElement('div',{style:{display:'flex',flexDirection:'column',gap:10}},
+              (isB2B?[
+                {label:'Email copy',placeholder:'e.g. \"Your reconciliation process shouldn\'t take longer than your board prep. We give finance teams their time back — not through another dashboard, but by eliminating the work entirely.\"'},
+                {label:'LinkedIn post or headline',placeholder:'e.g. \"Most CFOs find out about cash flow problems on Day 5. By then it\'s already Day 5.\"'},
+                {label:'Cold outreach or sales copy',placeholder:'e.g. \"Three clients in community banking reduced close time from 9 days to 2. Worth 20 minutes?\"'},
+                {label:'Ad copy or tagline',placeholder:'e.g. \"Close the books in 2 days. Not 9.\"'},
+                {label:'Any other example',placeholder:'Website hero, case study opener, investor memo — anything that sounds like you at your best.'}
+              ]:[
+                {label:'Email copy',placeholder:'e.g. \"You don\'t need a 12-step routine. You need three products that actually work. We spent two years formulating so you don\'t have to guess anymore.\"'},
+                {label:'Instagram caption or social post',placeholder:'e.g. \"Cleared up in 3 weeks. No dermatologist. No guesswork. Just the thing that actually works.\"'},
+                {label:'Product page or website copy',placeholder:'e.g. \"Your skin, but the version that\'s figured it out.\"'},
+                {label:'Ad copy',placeholder:'e.g. \"Finally. A routine that takes 90 seconds and actually delivers.\"'},
+                {label:'Any other example',placeholder:'SMS, influencer brief, packaging — anything that sounds like you at your best.'}
+              ]).map((ex,i)=>React.createElement('div',{key:i},
+                React.createElement('label',{style:{fontSize:11,fontWeight:600,color:'var(--t3)',display:'block',marginBottom:4}},ex.label,React.createElement('span',{style:{fontWeight:400,marginLeft:4}},'— optional'+(i===0?' (start here)':''))),
+                React.createElement('textarea',{className:'finput',rows:2,placeholder:ex.placeholder,
+                  value:(d.voice_examples||[])[i]||'',
+                  onChange:e=>{const arr=[...(d.voice_examples||['','','','',''])];arr[i]=e.target.value;set('voice_examples',arr);}
+                })
+              ))
+            )
           ),
           React.createElement('div',{className:'fg'},
             React.createElement('label',{className:'flabel'},'What would your brand never say? ',React.createElement('span',{style:{fontWeight:400,color:'var(--t3)'}},'— optional')),
@@ -1105,7 +1433,7 @@ function Onboarding({mode,onComplete}){
           React.createElement('div',{className:'rsec'},
             React.createElement('div',{className:'rsec-title'},'Brand voice'),
             React.createElement('div',{className:'ritem'},React.createElement('span',{className:'rlabel'},'Descriptors'),React.createElement('span',{className:'rval'},d.voice_words.join(', ')||'—')),
-            d.voice_example&&React.createElement('div',{className:'ritem'},React.createElement('span',{className:'rlabel'},'Style example'),React.createElement('span',{className:'rval',style:{fontStyle:'italic'}},`"${d.voice_example.slice(0,140)}${d.voice_example.length>140?'...':''}"` ))
+            (d.voice_examples||[]).filter(Boolean).length>0&&React.createElement('div',{className:'ritem'},React.createElement('span',{className:'rlabel'},'Voice examples'),React.createElement('span',{className:'rval'},`${(d.voice_examples||[]).filter(Boolean).length} example${(d.voice_examples||[]).filter(Boolean).length!==1?'s':''} added`))
           ),
           (d.avoid||d.required||d.reg_context)&&React.createElement('div',{className:'rsec'},
             React.createElement('div',{className:'rsec-title'},'Guardrails'),
@@ -1243,7 +1571,13 @@ function SmartChannelSelector({repo,signal,onConfirm}){
             ch.name,
             React.createElement('span',{className:`ch-role ${roleClass(ch.role)}`},roleLabel(ch.role))
           ),
-          React.createElement('div',{className:'ch-rationale'},ch.rationale)
+          React.createElement('div',{className:'ch-rationale'},ch.rationale),
+          ch.best_practices&&ch.best_practices.length>0&&React.createElement('div',{style:{marginTop:8,paddingTop:8,borderTop:'1px solid var(--border)'}},
+            React.createElement('div',{style:{fontSize:11,fontWeight:700,color:'var(--t3)',textTransform:'uppercase',letterSpacing:'.06em',marginBottom:5}},'Deployment tips'),
+            React.createElement('ul',{style:{margin:0,paddingLeft:16}},
+              ch.best_practices.map((tip,i)=>React.createElement('li',{key:i,style:{fontSize:12,color:'var(--t2)',lineHeight:1.5,marginBottom:3}},tip))
+            )
+          )
         )
       ))
     ),
@@ -1301,12 +1635,21 @@ function CampaignBuilder({repo,onSave,onBack,onGmailPush}){
   const [generating,setGenerating]=useState(false);
   const [reviewed,setReviewed]=useState(false);
   const [approved,setApproved]=useState(false);
+  const [checklist,setChecklist]=useState(null);
+  const [checklistDone,setChecklistDone]=useState({});
   const [signal,setSignal]=useState({campaign_name:'',campaign_type:[],channels:[],key_message:'',goal:'',persona_focus:'',timeline:'',context:''});
   const [confirmedChannels,setConfirmedChannels]=useState([]);
   const [strategy,setStrategy]=useState('');
+  const [strategyRevNote,setStrategyRevNote]=useState('');
+  const [showStrategyRevision,setShowStrategyRevision]=useState(false);
   const [assets,setAssets]=useState('');
   const [qaResult,setQaResult]=useState('');
+  const [mechIssues,setMechIssues]=useState([]);
   const [activeAssetTab,setActiveAssetTab]=useState('full');
+  const [assetApprovals,setAssetApprovals]=useState({});
+  const [assetRevNotes,setAssetRevNotes]=useState({});
+  const [showAssetRev,setShowAssetRev]=useState({});
+  const [regenningAsset,setRegenningAsset]=useState(null);
 
   const setSig=(k,v)=>setSignal(p=>({...p,[k]:v}));
   // Multi-select: toggle type in/out of array (max 3)
@@ -1348,20 +1691,58 @@ function CampaignBuilder({repo,onSave,onBack,onGmailPush}){
     ]
   };
 
-  async function genStrategy(){
+  async function genStrategy(revisionNote){
     setGenerating(true);setGeneratingStage('strategy');
-    const out=await callClaude(buildSys(repo),buildStrategyPrompt(repo,signal,confirmedChannels),1500);
-    setStrategy(out);setGenerating(false);setGeneratingStage('');advance();
+    const basePrompt=buildStrategyPrompt(repo,signal,confirmedChannels);
+    const prompt=revisionNote
+      ?basePrompt+`\n\n## REVISION REQUEST FROM REVIEWER\n${revisionNote}\n\nRevise the strategy document above to address these notes. Preserve sections that were not flagged. Return the complete updated strategy document.`
+      :basePrompt;
+    const out=await callClaude(buildSys(repo),prompt,1500);
+    setStrategy(out);setStrategyRevNote('');setShowStrategyRevision(false);setGenerating(false);setGeneratingStage('');advance();
   }
   async function genAssets(){
     setGenerating(true);setGeneratingStage('assets');
     const out=await callClaude(buildSys(repo),buildAssetPrompt(repo,signal,confirmedChannels,strategy),2000);
+    setAssetApprovals({});setAssetRevNotes({});setShowAssetRev({});
     setAssets(out);setGenerating(false);setGeneratingStage('');advance();
   }
   async function genQA(){
     setGenerating(true);setGeneratingStage('qa');
+    const prePass=runMechanicalPrePass(assets,confirmedChannels,repo.mode==='b2b');
+    setMechIssues(prePass);
     const out=await callClaude(buildSys(repo),buildQAPrompt(repo,signal,confirmedChannels,assets),1500);
     setQaResult(out);setGenerating(false);setGeneratingStage('');advance();
+  }
+
+  async function regenSingleAsset(channelId, revNote) {
+    const ch = confirmedChannels.find(c=>c.id===channelId);
+    if (!ch) return;
+    setRegenningAsset(channelId);
+    const prompt = buildSys(repo) + `\n\nYou are rewriting a single asset from the campaign package. The strategy document and all other assets remain unchanged.\n\nCHANNEL TO REWRITE: ${ch.name}\n\nORIGINAL STRATEGY:\n${strategy}\n\nREVISION NOTE FROM REVIEWER:\n${revNote}\n\nReturn ONLY the revised asset for ${ch.name}, starting with ## ${ch.name.toUpperCase()} and ending cleanly. Do not include any other channel assets.`;
+    const out = await callClaude(buildSys(repo), prompt, 800);
+    // Splice the new asset back into the full assets string
+    const marker = '## ' + ch.name.toUpperCase();
+    const altMarker = '## ' + ch.id.replace(/_/g,' ').toUpperCase();
+    const lines = assets.split('\n');
+    let start = -1, end = lines.length;
+    lines.forEach((ln,i)=>{
+      const up=ln.toUpperCase();
+      if((up.includes(ch.name.toUpperCase())||up.includes(ch.id.replace(/_/g,' ').toUpperCase()))&&ln.startsWith('##')) start=i;
+      else if(start>=0&&i>start&&ln.startsWith('##')) { if(end===lines.length) end=i; }
+    });
+    let newAssets;
+    if(start>=0) {
+      const before=lines.slice(0,start).join('\n');
+      const after=lines.slice(end).join('\n');
+      newAssets=(before+'\n'+out+(after?'\n'+after:'')).trim();
+    } else {
+      newAssets=assets+'\n\n'+out;
+    }
+    setAssets(newAssets);
+    setAssetApprovals(p=>({...p,[channelId]:false}));
+    setAssetRevNotes(p=>({...p,[channelId]:''}));
+    setShowAssetRev(p=>({...p,[channelId]:false}));
+    setRegenningAsset(null);
   }
 
   const qaStatus=qaResult.includes('FAIL')||qaResult.includes('HARD STOP')?'fail':qaResult.includes('CONDITIONAL')?'warn':qaResult.length>10?'pass':'';
@@ -1517,13 +1898,31 @@ function CampaignBuilder({repo,onSave,onBack,onGmailPush}){
         React.createElement('div',{className:'review-block'},
           React.createElement('div',{className:'rb-label'},'Strategy review'),
           React.createElement('div',{className:'rb-pending'},
-            React.createElement('div',null,React.createElement('div',{className:'rb-who'},'Ready to generate the full asset package?'),React.createElement('div',{className:'rb-note'},'Approve strategy to build assets for all '+confirmedChannels.length+' confirmed channels.')),
             reviewed
               ?React.createElement('div',{style:{display:'flex',alignItems:'center',gap:8,color:'var(--gtxt)',fontSize:13,fontWeight:600}},React.createElement(IcoCheck),' Approved — building assets')
-              :React.createElement('div',{className:'rb-actions'},
-                React.createElement('button',{className:'btn bo bsm bred'},React.createElement('span',{style:{color:'var(--rtxt)'}},'Request revisions')),
-                React.createElement('button',{className:'btn bgreen bsm',disabled:generating,onClick:()=>{setReviewed(true);genAssets();}},
-                  generating?React.createElement(React.Fragment,null,React.createElement('div',{className:'spinner'}),' Building assets...'):React.createElement(React.Fragment,null,React.createElement(IcoCheck),' Approve & build assets')
+              :showStrategyRevision
+              ?React.createElement('div',{style:{width:'100%'}},
+                React.createElement('div',{style:{fontSize:13,fontWeight:600,marginBottom:8,color:'var(--text)'}},'What needs to change?'),
+                React.createElement('div',{style:{fontSize:12,color:'var(--t3)',marginBottom:8}},'Be specific. Call out the section, the issue, and the direction. Your agent will revise and return the full updated document.'),
+                React.createElement('textarea',{className:'finput',rows:4,
+                  placeholder:'e.g. "The messaging hierarchy in Section 4 is too generic — sharpen the primary message to name the specific outcome for a VP of Finance. Also, Section 7 KPI targets need to be more aggressive given our 60-day timeline."',
+                  value:strategyRevNote,onChange:e=>setStrategyRevNote(e.target.value),
+                  style:{marginBottom:10}
+                }),
+                React.createElement('div',{style:{display:'flex',gap:8}},
+                  React.createElement('button',{className:'btn bo bsm',onClick:()=>{setShowStrategyRevision(false);setStrategyRevNote('');}},'← Cancel'),
+                  React.createElement('button',{className:'btn bp bsm',disabled:!strategyRevNote.trim()||generating,onClick:()=>genStrategy(strategyRevNote)},
+                    generating?React.createElement(React.Fragment,null,React.createElement('div',{className:'spinner'}),' Revising...'):'↺ Rerun with notes'
+                  )
+                )
+              )
+              :React.createElement('div',null,
+                React.createElement('div',null,React.createElement('div',{className:'rb-who'},'Ready to generate the full asset package?'),React.createElement('div',{className:'rb-note'},'Approve strategy to build assets for all '+confirmedChannels.length+' confirmed channel'+(confirmedChannels.length!==1?'s':'')+'.')),
+                React.createElement('div',{className:'rb-actions'},
+                  React.createElement('button',{className:'btn bo bsm bred',onClick:()=>setShowStrategyRevision(true)},React.createElement('span',{style:{color:'var(--rtxt)'}},'Request revisions')),
+                  React.createElement('button',{className:'btn bgreen bsm',disabled:generating,onClick:()=>{setReviewed(true);genAssets();}},
+                    generating?React.createElement(React.Fragment,null,React.createElement('div',{className:'spinner'}),' Building assets...'):React.createElement(React.Fragment,null,React.createElement(IcoCheck),' Approve & build assets')
+                  )
                 )
               )
           )
@@ -1538,23 +1937,81 @@ function CampaignBuilder({repo,onSave,onBack,onGmailPush}){
           React.createElement('div',null,React.createElement('div',{style:{fontSize:14,fontWeight:700}},'Asset package'),React.createElement('div',{style:{fontSize:12,color:'var(--t3)',marginTop:2}},confirmedChannels.map(c=>c.name).join(' · '))),
           React.createElement('div',{style:{display:'flex',gap:8}},React.createElement('button',{className:'btn bo bsm',onClick:()=>copy(assets)},React.createElement(IcoCopy),' Copy all'),React.createElement('button',{className:'btn bg bsm',onClick:genAssets,disabled:generating},'Regenerate'))
         ),
-        assetSections.length>1&&React.createElement('div',{className:'asset-tabs'},assetSections.map(s=>React.createElement('div',{key:s.id,className:`asset-tab ${activeAssetTab===s.id?'active':''}`,onClick:()=>setActiveAssetTab(s.id)},s.label))),
+        assetSections.length>1&&React.createElement('div',{className:'asset-tabs'},
+          assetSections.map(s=>{
+            const isApproved=s.id!=='full'&&assetApprovals[s.id];
+            return React.createElement('div',{key:s.id,
+              className:`asset-tab ${activeAssetTab===s.id?'active':''}`,
+              onClick:()=>setActiveAssetTab(s.id),
+              style:{display:'flex',alignItems:'center',gap:5}
+            },
+              isApproved&&React.createElement('span',{style:{color:'var(--gtxt)',fontSize:12}},'✓'),
+              s.label
+            );
+          })
+        ),
         React.createElement('div',{className:'out-panel'},React.createElement(MD,{text:getSection(activeAssetTab)})),
-        React.createElement('div',{className:'review-block'},
+        activeAssetTab!=='full'&&React.createElement('div',{style:{border:'1px solid var(--border)',borderRadius:10,padding:'14px 16px',marginTop:12,background:assetApprovals[activeAssetTab]?'#f0fdf4':showAssetRev[activeAssetTab]?'var(--bg)':'white'}},
+          assetApprovals[activeAssetTab]
+            ?React.createElement('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between'}},
+              React.createElement('div',{style:{display:'flex',alignItems:'center',gap:8,color:'var(--gtxt)',fontSize:13,fontWeight:600}},React.createElement(IcoCheck),' Asset approved'),
+              React.createElement('button',{className:'btn bo bsm',style:{fontSize:11},onClick:()=>setAssetApprovals(p=>({...p,[activeAssetTab]:false}))},'↩ Unapprove')
+            )
+            :showAssetRev[activeAssetTab]
+            ?React.createElement('div',null,
+              React.createElement('div',{style:{fontSize:13,fontWeight:600,marginBottom:6}},'Revision notes for ',React.createElement('strong',null,confirmedChannels.find(ch=>ch.id===activeAssetTab)?.name||activeAssetTab)),
+              React.createElement('div',{style:{fontSize:12,color:'var(--t3)',marginBottom:8}},'Be specific: name the email, the section, the issue. Your agent rewrites only this asset — everything else stays.'),
+              React.createElement('textarea',{className:'finput',rows:3,
+                placeholder:'e.g. "Email 2 subject line is too generic. Body needs to open with the CFO pain point, not a question. CTA should name a specific action."',
+                value:assetRevNotes[activeAssetTab]||'',
+                onChange:e=>setAssetRevNotes(p=>({...p,[activeAssetTab]:e.target.value})),
+                style:{marginBottom:10}
+              }),
+              React.createElement('div',{style:{display:'flex',gap:8}},
+                React.createElement('button',{className:'btn bo bsm',onClick:()=>setShowAssetRev(p=>({...p,[activeAssetTab]:false}))},'← Cancel'),
+                React.createElement('button',{className:'btn bp bsm',
+                  disabled:!(assetRevNotes[activeAssetTab]||'').trim()||regenningAsset===activeAssetTab,
+                  onClick:()=>regenSingleAsset(activeAssetTab,assetRevNotes[activeAssetTab]||'')
+                },
+                  regenningAsset===activeAssetTab
+                    ?React.createElement(React.Fragment,null,React.createElement('div',{className:'spinner'}),' Rewriting...')
+                    :'↺ Rewrite this asset'
+                )
+              )
+            )
+            :React.createElement('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:8}},
+              React.createElement('div',{style:{fontSize:12,color:'var(--t2)'}},confirmedChannels.find(ch=>ch.id===activeAssetTab)?.name,' — review complete?'),
+              React.createElement('div',{style:{display:'flex',gap:8}},
+                React.createElement('button',{className:'btn bo bsm bred',onClick:()=>setShowAssetRev(p=>({...p,[activeAssetTab]:true}))},
+                  React.createElement('span',{style:{color:'var(--rtxt)'}},'Request revisions')
+                ),
+                React.createElement('button',{className:'btn bgreen bsm',onClick:()=>setAssetApprovals(p=>({...p,[activeAssetTab]:true}))},
+                  React.createElement(IcoCheck),' Approve asset'
+                )
+              )
+            )
+        ),
+        activeAssetTab==='full'&&React.createElement('div',{className:'review-block'},
           React.createElement('div',{className:'rb-label'},'Asset review'),
           React.createElement('div',{className:'rb-pending'},
-            React.createElement('div',null,React.createElement('div',{className:'rb-who'},'Assets ready for QA?'),React.createElement('div',{className:'rb-note'},'Review above. Send to brand, accuracy, and conversion review.')),
+            React.createElement('div',null,
+              React.createElement('div',{className:'rb-who'},'Assets ready for QA?'),
+              React.createElement('div',{className:'rb-note'},
+                Object.keys(assetApprovals).filter(k=>assetApprovals[k]).length>0
+                  ?`${Object.keys(assetApprovals).filter(k=>assetApprovals[k]).length} of ${confirmedChannels.length} assets individually approved. Review each channel tab or send all to QA.`
+                  :'Review each channel tab above, then approve individually or send everything to QA.'
+              )
+            ),
             reviewed
               ?React.createElement('div',{style:{display:'flex',alignItems:'center',gap:8,color:'var(--gtxt)',fontSize:13,fontWeight:600}},React.createElement(IcoCheck),' Sent to QA')
               :React.createElement('div',{className:'rb-actions'},
-                React.createElement('button',{className:'btn bo bsm bred'},React.createElement('span',{style:{color:'var(--rtxt)'}},'Request revisions')),
+                React.createElement('button',{className:'btn bo bsm bred'},React.createElement('span',{style:{color:'var(--rtxt)'}},'Revise all')),
                 React.createElement('button',{className:'btn bgreen bsm',disabled:generating,onClick:()=>{setReviewed(true);genQA();}},
                   generating?React.createElement(React.Fragment,null,React.createElement('div',{className:'spinner'}),' Running QA...'):React.createElement(React.Fragment,null,React.createElement(IcoShield),' Send to QA review')
                 )
               )
           )
-        )
-      ):React.createElement('div',{className:'card'},React.createElement('div',{className:'empty'},React.createElement('div',{className:'empty-title'},'Assets not generated yet'),React.createElement('div',{className:'empty-sub'},'Approve the strategy first.'),React.createElement('button',{className:'btn bp',onClick:()=>setActiveTab('strategy')},'Back to Strategy')))
+        ):React.createElement('div',{className:'card'},React.createElement('div',{className:'empty'},React.createElement('div',{className:'empty-title'},'Assets not generated yet'),React.createElement('div',{className:'empty-sub'},'Approve the strategy first.'),React.createElement('button',{className:'btn bp',onClick:()=>setActiveTab('strategy')},'Back to Strategy')))
     ),
 
     // QA
@@ -1569,6 +2026,36 @@ function CampaignBuilder({repo,onSave,onBack,onGmailPush}){
           qaStatus==='warn'?React.createElement(React.Fragment,null,React.createElement(IcoShield),' Conditional pass — corrections required'):
           React.createElement(React.Fragment,null,React.createElement(IcoShield),' QA failed — hard stops found')
         ),
+        mechIssues.length>0&&React.createElement('div',{style:{marginBottom:16,border:'1px solid #fecaca',borderRadius:10,overflow:'hidden'}},
+          React.createElement('div',{style:{background:'#fef2f2',padding:'10px 14px',display:'flex',alignItems:'center',gap:8,borderBottom:'1px solid #fecaca'}},
+            React.createElement('span',{style:{fontSize:11,fontWeight:700,padding:'2px 8px',borderRadius:20,background:'#dc2626',color:'white'}},'PRE-PASS'),
+            React.createElement('span',{style:{fontSize:13,fontWeight:700,color:'#991b1b'}},
+              mechIssues.filter(i=>i.severity==='HARD STOP').length+' hard stop'+( mechIssues.filter(i=>i.severity==='HARD STOP').length!==1?'s':'')+
+              ' · '+mechIssues.filter(i=>i.severity==='MAJOR').length+' major'+
+              ' · '+mechIssues.filter(i=>i.severity==='MINOR').length+' minor'
+            ),
+            React.createElement('span',{style:{fontSize:11,color:'var(--t3)',marginLeft:'auto'}},'Deterministic — runs before AI review')
+          ),
+          React.createElement('table',{style:{width:'100%',borderCollapse:'collapse',fontSize:12}},
+            React.createElement('thead',null,
+              React.createElement('tr',{style:{background:'#fff5f5'}},
+                ['Asset','Issue','Severity','Fix required'].map(h=>React.createElement('th',{key:h,style:{padding:'7px 12px',textAlign:'left',fontWeight:700,fontSize:11,color:'var(--t3)',borderBottom:'1px solid #fecaca'}},h))
+              )
+            ),
+            React.createElement('tbody',null,
+              mechIssues.map((iss,i)=>React.createElement('tr',{key:i,style:{borderBottom:'1px solid var(--border)',background:i%2===0?'white':'var(--bg)'}},
+                React.createElement('td',{style:{padding:'7px 12px',color:'var(--text)',fontWeight:600}},iss.asset),
+                React.createElement('td',{style:{padding:'7px 12px',color:'var(--t2)'}},iss.issue),
+                React.createElement('td',{style:{padding:'7px 12px'}},
+                  React.createElement('span',{style:{fontSize:11,fontWeight:700,padding:'2px 8px',borderRadius:20,
+                    background:iss.severity==='HARD STOP'?'#fee2e2':iss.severity==='MAJOR'?'#fef3c7':'#f0fdf4',
+                    color:iss.severity==='HARD STOP'?'#991b1b':iss.severity==='MAJOR'?'#92400e':'#166534'}},iss.severity)
+                ),
+                React.createElement('td',{style:{padding:'7px 12px',color:'var(--t2)',fontStyle:'italic'}},iss.fix)
+              ))
+            )
+          )
+        ),
         React.createElement('div',{className:'out-panel'},React.createElement(MD,{text:qaResult})),
         React.createElement('div',{className:'review-block'},
           React.createElement('div',{className:'rb-label'},'Production clearance'),
@@ -1578,7 +2065,7 @@ function CampaignBuilder({repo,onSave,onBack,onGmailPush}){
               ?React.createElement('div',{style:{display:'flex',alignItems:'center',gap:8,color:'var(--gtxt)',fontSize:13,fontWeight:600}},React.createElement(IcoCheck),' Production ready')
               :React.createElement('div',{className:'rb-actions'},
                 React.createElement('button',{className:'btn bo bsm bamber',onClick:genAssets,disabled:generating},'Revise assets'),
-                React.createElement('button',{className:'btn bgreen bsm',onClick:()=>{setApproved(true);advance();}},React.createElement(IcoCheck),' Clear for production')
+                React.createElement('button',{className:'btn bgreen bsm',onClick:()=>{setApproved(true);const cl=buildDeploymentChecklist(confirmedChannels,repo.mode==='b2b');setChecklist(cl);setChecklistDone({});advance();}},React.createElement(IcoCheck),' Clear for production')
               )
           )
         )
@@ -1595,10 +2082,42 @@ function CampaignBuilder({repo,onSave,onBack,onGmailPush}){
           React.createElement('div',{style:{fontSize:18,fontWeight:800,color:'var(--text)',marginBottom:6}},'Production ready'),
           React.createElement('div',{style:{fontSize:14,color:'var(--t2)',marginBottom:20}},'Strategy reviewed · assets built · QA cleared · ready to deploy.'),
           React.createElement('div',{style:{display:'flex',gap:10,justifyContent:'center',flexWrap:'wrap'}},
-            React.createElement('button',{className:'btn bp',onClick:()=>onGmailPush(assets)},'Push to Gmail'),
             React.createElement('button',{className:'btn bo',onClick:()=>copy(assets)},React.createElement(IcoCopy),' Copy all assets'),
             React.createElement('button',{className:'btn bgreen',onClick:()=>{onSave({name:signal.campaign_name,type:signal.campaign_type,channels:confirmedChannels,strategy,assets,qa:qaResult,mode:repo.mode,date:new Date().toLocaleDateString('en-US',{month:'short',day:'numeric'})});showToast('Saved to library');}},React.createElement(IcoCheck),' Save to library')
           )
+        )
+      ),
+      checklist&&React.createElement('div',{className:'card'},
+        React.createElement('div',{style:{fontSize:14,fontWeight:700,marginBottom:4}},'Deployment checklist'),
+        React.createElement('div',{style:{fontSize:12,color:'var(--t3)',marginBottom:16}},'Check off each item as you deploy. Your campaign doesn’t go live until it does.'),
+        React.createElement('div',{style:{marginBottom:16}},
+          React.createElement('div',{style:{fontSize:11,fontWeight:700,letterSpacing:'.07em',textTransform:'uppercase',color:'var(--t3)',marginBottom:10}},'Pre-launch — all campaigns'),
+          checklist.global.map((item,i)=>{
+            const key='global_'+i;
+            const done=!!checklistDone[key];
+            return React.createElement('div',{key:key,style:{display:'flex',alignItems:'flex-start',gap:10,padding:'8px 0',borderBottom:'1px solid var(--border)',cursor:'pointer'},onClick:()=>setChecklistDone(p=>({...p,[key]:!done}))},
+              React.createElement('div',{style:{width:18,height:18,borderRadius:4,border:`2px solid ${done?'var(--green)':'var(--border2)'}`,background:done?'var(--green)':'white',flexShrink:0,marginTop:1,display:'flex',alignItems:'center',justifyContent:'center'}},
+                done&&React.createElement('svg',{width:10,height:10,viewBox:'0 0 10 10',fill:'none',stroke:'white',strokeWidth:2,strokeLinecap:'round',strokeLinejoin:'round'},React.createElement('path',{d:'M1.5 5L4 7.5L8.5 2.5'}))
+              ),
+              React.createElement('span',{style:{fontSize:13,color:done?'var(--t3)':'var(--text)',textDecoration:done?'line-through':'none',lineHeight:1.4}},item.label)
+            );
+          })
+        ),
+        checklist.channels.map(ch=>React.createElement('div',{key:ch.id,style:{marginBottom:16}},
+          React.createElement('div',{style:{fontSize:11,fontWeight:700,letterSpacing:'.07em',textTransform:'uppercase',color:'var(--t3)',marginBottom:10}},ch.channel),
+          ch.checks.map((item,i)=>{
+            const key=ch.id+'_'+i;
+            const done=!!checklistDone[key];
+            return React.createElement('div',{key:key,style:{display:'flex',alignItems:'flex-start',gap:10,padding:'8px 0',borderBottom:'1px solid var(--border)',cursor:'pointer'},onClick:()=>setChecklistDone(p=>({...p,[key]:!done}))},
+              React.createElement('div',{style:{width:18,height:18,borderRadius:4,border:`2px solid ${done?'var(--green)':'var(--border2)'}`,background:done?'var(--green)':'white',flexShrink:0,marginTop:1,display:'flex',alignItems:'center',justifyContent:'center'}},
+                done&&React.createElement('svg',{width:10,height:10,viewBox:'0 0 10 10',fill:'none',stroke:'white',strokeWidth:2,strokeLinecap:'round',strokeLinejoin:'round'},React.createElement('path',{d:'M1.5 5L4 7.5L8.5 2.5'}))
+              ),
+              React.createElement('span',{style:{fontSize:13,color:done?'var(--t3)':'var(--text)',textDecoration:done?'line-through':'none',lineHeight:1.4}},item.label)
+            );
+          })
+        )),
+        React.createElement('div',{style:{marginTop:8,padding:'10px 12px',background:'var(--bg)',borderRadius:8,fontSize:12,color:'var(--t2)'}},
+          `${Object.values(checklistDone).filter(Boolean).length} of ${checklist.global.length+checklist.channels.reduce((a,ch)=>a+ch.checks.length,0)} items checked`
         )
       ),
       React.createElement('div',{className:'card'},
@@ -1709,8 +2228,7 @@ function Library({campaigns,onNew}){
       tabs.length>1&&React.createElement('div',{className:'asset-tabs'},tabs.map(s=>React.createElement('div',{key:s.id,className:`asset-tab ${atab===s.id?'active':''}`,onClick:()=>setAtab(s.id)},s.label))),
       React.createElement('div',{className:'out-panel',style:{maxHeight:520}},React.createElement(MD,{text:getSection(atab)})),
       React.createElement('div',{style:{display:'flex',gap:8,marginTop:10}},
-        React.createElement('button',{className:'btn bo bsm',onClick:()=>{navigator.clipboard.writeText(c.assets||'');showToast('Copied');}},React.createElement(IcoCopy),' Copy assets'),
-        React.createElement('button',{className:'btn bg bsm',onClick:()=>showToast('Gmail push available on Enterprise plan.')},'Push to Gmail')
+        React.createElement('button',{className:'btn bo bsm',onClick:()=>{navigator.clipboard.writeText(c.assets||'');showToast('Copied');}},React.createElement(IcoCopy),' Copy assets')
       )
     ):campaigns.map((c,i)=>React.createElement('div',{key:i,className:'campaign-card',onClick:()=>{setSel(i);setAtab('full');}},
       React.createElement('div',{className:'cc-icon'},React.createElement(IcoCampaign)),
@@ -1906,7 +2424,15 @@ function Repository({repo,onUpdate}){
             ),
             React.createElement('div',null,
               React.createElement('label',{style:{fontSize:12,fontWeight:600,color:'var(--t2)',display:'block',marginBottom:4}},'Voice example (past copy to study)'),
-              React.createElement('textarea',{className:'finput',rows:3,value:draft.voice_example||'',onChange:e=>setD('voice_example',e.target.value)})
+              React.createElement('div',{style:{display:'flex',flexDirection:'column',gap:8}},
+                (isB2B?['Email copy','LinkedIn / social','Cold outreach','Ad copy / tagline','Other']:['Email copy','Instagram / social','Product page','Ad copy','Other']).map((lbl,i)=>React.createElement('div',{key:i},
+                  React.createElement('label',{style:{fontSize:11,fontWeight:600,color:'var(--t3)',display:'block',marginBottom:3}},lbl),
+                  React.createElement('textarea',{className:'finput',rows:2,
+                    value:(draft.voice_examples||['','','','',''])[i]||'',
+                    onChange:e=>{const arr=[...(draft.voice_examples||['','','','',''])];arr[i]=e.target.value;setD('voice_examples',arr);}
+                  })
+                ))
+              )
             )
           )
         ),
@@ -1993,7 +2519,7 @@ function Repository({repo,onUpdate}){
       React.createElement('div',{className:'rsec'},
         React.createElement('div',{className:'rsec-title'},'Brand voice'),
         React.createElement('div',{className:'ritem'},React.createElement('span',{className:'rlabel'},'Descriptors'),React.createElement('span',{className:'rval'},repo.voice_words.join(', '))),
-        repo.voice_example&&React.createElement('div',{className:'ritem'},React.createElement('span',{className:'rlabel'},'Style example'),React.createElement('span',{className:'rval',style:{fontStyle:'italic'}},`"${repo.voice_example}"`))
+        (repo.voice_examples||[]).filter(Boolean).length>0&&React.createElement('div',{className:'ritem'},React.createElement('span',{className:'rlabel'},'Voice examples'),React.createElement('span',{className:'rval'},`${(repo.voice_examples||[]).filter(Boolean).length} example${(repo.voice_examples||[]).filter(Boolean).length!==1?'s':''} — click Edit to view`))
       ),
       (repo.avoid||repo.required||repo.reg_context)&&React.createElement('div',{className:'rsec'},
         React.createElement('div',{className:'rsec-title'},'Guardrails'),
@@ -2255,4 +2781,43 @@ function App(){
 ReactDOM.render(React.createElement(App),document.getElementById('root'));
 </script>
 </body>
-</html>
+</html>,
+    google_ads:`## GOOGLE ADS
+Search RSA (Responsive Search Ads) + Shopping copy.
+
+SEARCH RSA:
+H1: [Under 30 chars — includes primary keyword naturally]
+H2: [Under 30 chars — benefit or differentiator]
+H3: [Under 30 chars — CTA or proof point]
+H4: [Under 30 chars — secondary benefit]
+H5: [Under 30 chars — brand or offer]
+D1: [Under 90 chars — expands on primary benefit, includes keyword]
+D2: [Under 90 chars — social proof or specificity]
+D3: [Under 90 chars — urgency or offer if genuine, else secondary benefit]
+
+SHOPPING PRODUCT TITLE: [Under 150 chars — Product name + key attribute + size/variant if relevant]
+SHOPPING DESCRIPTION: [Under 500 chars — Benefit-led, natural language, no keyword stuffing]
+
+Keyword theme: [Recommended match type and 3-5 seed keywords based on repository context]
+Sources used: [list or "No external statistics used"]`,
+    meta_ads:`## META ADS (FACEBOOK / INSTAGRAM)
+Complete ad set for Meta Ads Manager.
+
+FEED AD (Single Image or Carousel):
+Primary text: [Under 125 chars. Benefit-first. Hook in first line — text gets cut after ~3 lines on mobile.]
+Headline: [Under 40 chars. Outcome or offer. This is the bold line under the image.]
+Description: [Under 30 chars. Reinforcing line — optional but use it.]
+CTA button: [Shop Now / Learn More / Sign Up / Get Offer / Book Now]
+
+STORY / REELS AD:
+Hook text overlay (0-3s): [Under 30 chars. Stops the scroll — question, stat, or bold claim]
+Body text overlay: [Under 60 chars. Benefit or transformation]
+CTA: [Under 20 chars. Conversational action verb]
+
+CAROUSEL (3 cards):
+Card 1 — Hook: [Headline under 40 chars] + [Body under 20 chars]
+Card 2 — Proof: [Headline under 40 chars] + [Body under 20 chars]
+Card 3 — CTA: [Headline under 40 chars] + [Body under 20 chars]
+
+Audience note: [1-2 sentences on recommended targeting — interest, custom audience, or lookalike based on repository customer profile]
+Sources used: [list or "No external statistics used"]`
