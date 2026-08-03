@@ -746,7 +746,46 @@ Suggested content angles: [3 specific video/post concepts with brief description
 Mandatory disclosures: [FTC #ad or #sponsored placement instructions]
 Deliverables: [Exactly what we need — posts, stories, reels, usage rights]
 Approval process: [Draft review timeline]
-Talking points (optional use): [3-5 natural phrases that communicate brand benefit]`
+Talking points (optional use): [3-5 natural phrases that communicate brand benefit]`,
+    google_ads:`## GOOGLE ADS
+Search RSA (Responsive Search Ads) + Shopping copy.
+
+SEARCH RSA:
+H1: [Under 30 chars — includes primary keyword naturally]
+H2: [Under 30 chars — benefit or differentiator]
+H3: [Under 30 chars — CTA or proof point]
+H4: [Under 30 chars — secondary benefit]
+H5: [Under 30 chars — brand or offer]
+D1: [Under 90 chars — expands on primary benefit, includes keyword]
+D2: [Under 90 chars — social proof or specificity]
+D3: [Under 90 chars — urgency or offer if genuine, else secondary benefit]
+
+SHOPPING PRODUCT TITLE: [Under 150 chars — Product name + key attribute + size/variant if relevant]
+SHOPPING DESCRIPTION: [Under 500 chars — Benefit-led, natural language, no keyword stuffing]
+
+Keyword theme: [Recommended match type and 3-5 seed keywords based on repository context]
+Sources used: [list or "No external statistics used"]`,
+    meta_ads:`## META ADS (FACEBOOK / INSTAGRAM)
+Complete ad set for Meta Ads Manager.
+
+FEED AD (Single Image or Carousel):
+Primary text: [Under 125 chars. Benefit-first. Hook in first line — text gets cut after ~3 lines on mobile.]
+Headline: [Under 40 chars. Outcome or offer. This is the bold line under the image.]
+Description: [Under 30 chars. Reinforcing line — optional but use it.]
+CTA button: [Shop Now / Learn More / Sign Up / Get Offer / Book Now]
+
+STORY / REELS AD:
+Hook text overlay (0-3s): [Under 30 chars. Stops the scroll — question, stat, or bold claim]
+Body text overlay: [Under 60 chars. Benefit or transformation]
+CTA: [Under 20 chars. Conversational action verb]
+
+CAROUSEL (3 cards):
+Card 1 — Hook: [Headline under 40 chars] + [Body under 20 chars]
+Card 2 — Proof: [Headline under 40 chars] + [Body under 20 chars]
+Card 3 — CTA: [Headline under 40 chars] + [Body under 20 chars]
+
+Audience note: [1-2 sentences on recommended targeting — interest, custom audience, or lookalike based on repository customer profile]
+Sources used: [list or "No external statistics used"]`
   };
   const selected=channels.map(c=>chInstr[c.id]).filter(Boolean).join('\n\n');
   return `${buildSys(repo)}
@@ -2800,43 +2839,4 @@ const _vorsaRoot = ReactDOM.createRoot(document.getElementById('root'));
 _vorsaRoot.render(React.createElement(App));
 </script>
 </body>
-</html>,
-    google_ads:`## GOOGLE ADS
-Search RSA (Responsive Search Ads) + Shopping copy.
-
-SEARCH RSA:
-H1: [Under 30 chars — includes primary keyword naturally]
-H2: [Under 30 chars — benefit or differentiator]
-H3: [Under 30 chars — CTA or proof point]
-H4: [Under 30 chars — secondary benefit]
-H5: [Under 30 chars — brand or offer]
-D1: [Under 90 chars — expands on primary benefit, includes keyword]
-D2: [Under 90 chars — social proof or specificity]
-D3: [Under 90 chars — urgency or offer if genuine, else secondary benefit]
-
-SHOPPING PRODUCT TITLE: [Under 150 chars — Product name + key attribute + size/variant if relevant]
-SHOPPING DESCRIPTION: [Under 500 chars — Benefit-led, natural language, no keyword stuffing]
-
-Keyword theme: [Recommended match type and 3-5 seed keywords based on repository context]
-Sources used: [list or "No external statistics used"]`,
-    meta_ads:`## META ADS (FACEBOOK / INSTAGRAM)
-Complete ad set for Meta Ads Manager.
-
-FEED AD (Single Image or Carousel):
-Primary text: [Under 125 chars. Benefit-first. Hook in first line — text gets cut after ~3 lines on mobile.]
-Headline: [Under 40 chars. Outcome or offer. This is the bold line under the image.]
-Description: [Under 30 chars. Reinforcing line — optional but use it.]
-CTA button: [Shop Now / Learn More / Sign Up / Get Offer / Book Now]
-
-STORY / REELS AD:
-Hook text overlay (0-3s): [Under 30 chars. Stops the scroll — question, stat, or bold claim]
-Body text overlay: [Under 60 chars. Benefit or transformation]
-CTA: [Under 20 chars. Conversational action verb]
-
-CAROUSEL (3 cards):
-Card 1 — Hook: [Headline under 40 chars] + [Body under 20 chars]
-Card 2 — Proof: [Headline under 40 chars] + [Body under 20 chars]
-Card 3 — CTA: [Headline under 40 chars] + [Body under 20 chars]
-
-Audience note: [1-2 sentences on recommended targeting — interest, custom audience, or lookalike based on repository customer profile]
-Sources used: [list or "No external statistics used"]`
+</html>
