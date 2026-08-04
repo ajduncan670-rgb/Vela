@@ -1974,86 +1974,118 @@ function CampaignBuilder({repo,onSave,onBack,onGmailPush}){
 
     // ASSETS
     !generating&&activeTab==='assets'&&React.createElement('div',null,
-      assets?React.createElement('div',null,
-        React.createElement('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:14}},
-          React.createElement('div',null,React.createElement('div',{style:{fontSize:14,fontWeight:700}},'Asset package'),React.createElement('div',{style:{fontSize:12,color:'var(--t3)',marginTop:2}},confirmedChannels.map(c=>c.name).join(' · '))),
-          React.createElement('div',{style:{display:'flex',gap:8}},React.createElement('button',{className:'btn bo bsm',onClick:()=>copy(assets)},React.createElement(IcoCopy),' Copy all'),React.createElement('button',{className:'btn bg bsm',onClick:genAssets,disabled:generating},'Regenerate'))
-        ),
-        assetSections.length>1&&React.createElement('div',{className:'asset-tabs'},
-          assetSections.map(s=>{
-            const isApproved=s.id!=='full'&&assetApprovals[s.id];
-            return React.createElement('div',{key:s.id,
-              className:`asset-tab ${activeAssetTab===s.id?'active':''}`,
-              onClick:()=>setActiveAssetTab(s.id),
-              style:{display:'flex',alignItems:'center',gap:5}
-            },
-              isApproved&&React.createElement('span',{style:{color:'var(--gtxt)',fontSize:12}},'✓'),
-              s.label
-            );
-          })
-        ),
-        React.createElement('div',{className:'out-panel'},React.createElement(MD,{text:getSection(activeAssetTab)})),
-        activeAssetTab!=='full'&&React.createElement('div',{style:{border:'1px solid var(--border)',borderRadius:10,padding:'14px 16px',marginTop:12,background:assetApprovals[activeAssetTab]?'#f0fdf4':showAssetRev[activeAssetTab]?'var(--bg)':'white'}},
-          assetApprovals[activeAssetTab]
-            ?React.createElement('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between'}},
-              React.createElement('div',{style:{display:'flex',alignItems:'center',gap:8,color:'var(--gtxt)',fontSize:13,fontWeight:600}},React.createElement(IcoCheck),' Asset approved'),
-              React.createElement('button',{className:'btn bo bsm',style:{fontSize:11},onClick:()=>setAssetApprovals(p=>({...p,[activeAssetTab]:false}))},'↩ Unapprove')
-            )
-            :showAssetRev[activeAssetTab]
-            ?React.createElement('div',null,
-              React.createElement('div',{style:{fontSize:13,fontWeight:600,marginBottom:6}},'Revision notes for ',React.createElement('strong',null,confirmedChannels.find(ch=>ch.id===activeAssetTab)?.name||activeAssetTab)),
-              React.createElement('div',{style:{fontSize:12,color:'var(--t3)',marginBottom:8}},'Be specific: name the email, the section, the issue. Your agent rewrites only this asset — everything else stays.'),
-              React.createElement('textarea',{className:'finput',rows:3,
-                placeholder:'e.g. "Email 2 subject line is too generic. Body needs to open with the CFO pain point, not a question. CTA should name a specific action."',
-                value:assetRevNotes[activeAssetTab]||'',
-                onChange:e=>setAssetRevNotes(p=>({...p,[activeAssetTab]:e.target.value})),
-                style:{marginBottom:10}
-              }),
-              React.createElement('div',{style:{display:'flex',gap:8}},
-                React.createElement('button',{className:'btn bo bsm',onClick:()=>setShowAssetRev(p=>({...p,[activeAssetTab]:false}))},'← Cancel'),
-                React.createElement('button',{className:'btn bp bsm',
-                  disabled:!(assetRevNotes[activeAssetTab]||'').trim()||regenningAsset===activeAssetTab,
-                  onClick:()=>regenSingleAsset(activeAssetTab,assetRevNotes[activeAssetTab]||'')
-                },
-                  regenningAsset===activeAssetTab
-                    ?React.createElement(React.Fragment,null,React.createElement('div',{className:'spinner'}),' Rewriting...')
-                    :'↺ Rewrite this asset'
-                )
-              )
-            )
-            :React.createElement('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:8}},
-              React.createElement('div',{style:{fontSize:12,color:'var(--t2)'}},confirmedChannels.find(ch=>ch.id===activeAssetTab)?.name,' — review complete?'),
-              React.createElement('div',{style:{display:'flex',gap:8}},
-                React.createElement('button',{className:'btn bo bsm bred',onClick:()=>setShowAssetRev(p=>({...p,[activeAssetTab]:true}))},
-                  React.createElement('span',{style:{color:'var(--rtxt)'}},'Request revisions')
-                ),
-                React.createElement('button',{className:'btn bgreen bsm',onClick:()=>setAssetApprovals(p=>({...p,[activeAssetTab]:true}))},
-                  React.createElement(IcoCheck),' Approve asset'
-                )
-              )
-            )
-        ),
-        activeAssetTab==='full'&&React.createElement('div',{className:'review-block'},
-          React.createElement('div',{className:'rb-label'},'Asset review'),
-          React.createElement('div',{className:'rb-pending'},
+      assets
+        ?React.createElement('div',null,
+          React.createElement('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:14}},
             React.createElement('div',null,
-              React.createElement('div',{className:'rb-who'},'Assets ready for QA?'),
-              React.createElement('div',{className:'rb-note'},
-                Object.keys(assetApprovals).filter(k=>assetApprovals[k]).length>0
-                  ?`${Object.keys(assetApprovals).filter(k=>assetApprovals[k]).length} of ${confirmedChannels.length} assets individually approved. Review each channel tab or send all to QA.`
-                  :'Review each channel tab above, then approve individually or send everything to QA.'
-              )
+              React.createElement('div',{style:{fontSize:14,fontWeight:700}},'Asset package'),
+              React.createElement('div',{style:{fontSize:12,color:'var(--t3)',marginTop:2}},confirmedChannels.length+' channel'+(confirmedChannels.length!==1?'s':''))
             ),
-            reviewed
-              ?React.createElement('div',{style:{display:'flex',alignItems:'center',gap:8,color:'var(--gtxt)',fontSize:13,fontWeight:600}},React.createElement(IcoCheck),' Sent to QA')
-              :React.createElement('div',{className:'rb-actions'},
-                React.createElement('button',{className:'btn bo bsm bred'},React.createElement('span',{style:{color:'var(--rtxt)'}},'Revise all')),
-                React.createElement('button',{className:'btn bgreen bsm',disabled:generating,onClick:()=>{setReviewed(true);genQA();}},
-                  generating?React.createElement(React.Fragment,null,React.createElement('div',{className:'spinner'}),' Running QA...'):React.createElement(React.Fragment,null,React.createElement(IcoShield),' Send to QA review')
+            React.createElement('div',{style:{display:'flex',gap:8}},
+              React.createElement('button',{className:'btn bo bsm',onClick:()=>copy(assets)},React.createElement(IcoCopy),' Copy all')
+            )
+          ),
+          assetSections.length>1&&React.createElement('div',{className:'asset-tabs'},
+            assetSections.map(s=>{
+              const isApproved=s.id!=='full'&&assetApprovals[s.id];
+              return React.createElement('div',{
+                key:s.id,
+                className:'asset-tab '+(activeAssetTab===s.id?'active':''),
+                onClick:()=>setActiveAssetTab(s.id),
+                style:{display:'flex',alignItems:'center',gap:5}
+              },
+                isApproved&&React.createElement('span',{style:{color:'var(--gtxt)',fontSize:12}},'✓'),
+                s.label
+              );
+            })
+          ),
+          React.createElement('div',{className:'out-panel'},
+            React.createElement(MD,{text:getSection(activeAssetTab)})
+          ),
+          activeAssetTab!=='full'&&React.createElement('div',{style:{border:'1px solid var(--border)',borderRadius:10,padding:'14px 16px',marginTop:12,background:assetApprovals[activeAssetTab]?'#f0fdf4':showAssetRev[activeAssetTab]?'var(--bg)':'white'}},
+            assetApprovals[activeAssetTab]
+              ?React.createElement('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between'}},
+                React.createElement('div',{style:{display:'flex',alignItems:'center',gap:8,color:'var(--gtxt)',fontSize:13,fontWeight:600}},
+                  React.createElement(IcoCheck),' Asset approved'
+                ),
+                React.createElement('button',{className:'btn bo bsm',style:{fontSize:11},onClick:()=>setAssetApprovals(p=>({...p,[activeAssetTab]:false}))},'↩ Unapprove')
+              )
+              :showAssetRev[activeAssetTab]
+              ?React.createElement('div',null,
+                React.createElement('div',{style:{fontSize:13,fontWeight:600,marginBottom:6}},
+                  'Revision notes for ',
+                  React.createElement('strong',null,(confirmedChannels.find(ch=>ch.id===activeAssetTab)||{}).name||activeAssetTab)
+                ),
+                React.createElement('div',{style:{fontSize:12,color:'var(--t3)',marginBottom:8}},'Be specific: name the email, the section, the issue. Your agent rewrites only this asset — everything else stays.'),
+                React.createElement('textarea',{
+                  className:'finput',rows:3,
+                  placeholder:'e.g. "Email 2 subject line is too generic. Body needs to open with the CFO pain point, not a question. CTA should name a specific action."',
+                  value:assetRevNotes[activeAssetTab]||'',
+                  onChange:function(e){setAssetRevNotes(function(p){var n=Object.assign({},p);n[activeAssetTab]=e.target.value;return n;});},
+                  style:{marginBottom:10}
+                }),
+                React.createElement('div',{style:{display:'flex',gap:8}},
+                  React.createElement('button',{className:'btn bo bsm',onClick:function(){setShowAssetRev(function(p){var n=Object.assign({},p);n[activeAssetTab]=false;return n;});}},'← Cancel'),
+                  React.createElement('button',{
+                    className:'btn bp bsm',
+                    disabled:!(assetRevNotes[activeAssetTab]||'').trim()||regenningAsset===activeAssetTab,
+                    onClick:function(){regenSingleAsset(activeAssetTab,assetRevNotes[activeAssetTab]||'');}
+                  },
+                    regenningAsset===activeAssetTab
+                      ?React.createElement(React.Fragment,null,React.createElement('div',{className:'spinner'}),' Rewriting...')
+                      :'↺ Rewrite this asset'
+                  )
                 )
               )
+              :React.createElement('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:8}},
+                React.createElement('div',{style:{fontSize:12,color:'var(--t2)'}},
+                  (confirmedChannels.find(ch=>ch.id===activeAssetTab)||{}).name,' — review complete?'
+                ),
+                React.createElement('div',{style:{display:'flex',gap:8}},
+                  React.createElement('button',{className:'btn bo bsm bred',onClick:function(){setShowAssetRev(function(p){var n=Object.assign({},p);n[activeAssetTab]=true;return n;});}},
+                    React.createElement('span',{style:{color:'var(--rtxt)'}},'Request revisions')
+                  ),
+                  React.createElement('button',{className:'btn bgreen bsm',onClick:function(){setAssetApprovals(function(p){var n=Object.assign({},p);n[activeAssetTab]=true;return n;});}},
+                    React.createElement(IcoCheck),' Approve asset'
+                  )
+                )
+              )
+          ),
+          activeAssetTab==='full'&&React.createElement('div',{className:'review-block'},
+            React.createElement('div',{className:'rb-label'},'Asset review'),
+            React.createElement('div',{className:'rb-pending'},
+              React.createElement('div',null,
+                React.createElement('div',{className:'rb-who'},'Assets ready for QA?'),
+                React.createElement('div',{className:'rb-note'},
+                  Object.keys(assetApprovals).filter(function(k){return assetApprovals[k];}).length>0
+                    ?Object.keys(assetApprovals).filter(function(k){return assetApprovals[k];}).length+' of '+confirmedChannels.length+' assets individually approved. Review each channel tab or send all to QA.'
+                    :'Review each channel tab above, then approve individually or send everything to QA.'
+                )
+              ),
+              reviewed
+                ?React.createElement('div',{style:{display:'flex',alignItems:'center',gap:8,color:'var(--gtxt)',fontSize:13,fontWeight:600}},
+                  React.createElement(IcoCheck),' Sent to QA'
+                )
+                :React.createElement('div',{className:'rb-actions'},
+                  React.createElement('button',{className:'btn bo bsm bred'},
+                    React.createElement('span',{style:{color:'var(--rtxt)'}},'Revise all')
+                  ),
+                  React.createElement('button',{className:'btn bgreen bsm',disabled:generating,onClick:function(){setReviewed(true);genQA();}},
+                    generating
+                      ?React.createElement(React.Fragment,null,React.createElement('div',{className:'spinner'}),' Running QA...')
+                      :React.createElement(React.Fragment,null,React.createElement(IcoShield),' Send to QA review')
+                  )
+                )
+            )
           )
-        ):React.createElement('div',{className:'card'},React.createElement('div',{className:'empty'},React.createElement('div',{className:'empty-title'},'Assets not generated yet'),React.createElement('div',{className:'empty-sub'},'Approve the strategy first.'),React.createElement('button',{className:'btn bp',onClick:()=>setActiveTab('strategy')},'Back to Strategy')))
+        )
+        :React.createElement('div',{className:'card'},
+          React.createElement('div',{className:'empty'},
+            React.createElement('div',{className:'empty-title'},'Assets not generated yet'),
+            React.createElement('div',{className:'empty-sub'},'Approve the strategy first.'),
+            React.createElement('button',{className:'btn bp',onClick:function(){setActiveTab('strategy');}},'Back to Strategy')
+          )
+        )
     ),
 
     // QA
