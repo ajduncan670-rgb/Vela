@@ -596,6 +596,11 @@ For each channel: its role in the campaign, funnel stage, and specific approach.
 |------|-------|----------|------|`;
 }
 
+function buildSingleAssetPrompt(repo,signal,channels,strategy){
+  // Identical to buildAssetPrompt but for ONE channel — guarantees full output, no truncation
+  return buildAssetPrompt(repo,signal,channels,strategy);
+}
+
 function buildAssetPrompt(repo,signal,channels,strategy){
   const isB2B=repo.mode==='b2b';
   const chInstr={
@@ -1532,14 +1537,44 @@ function StagePipeline({stage,stagesReached,activeTab,onTab}){
 
 // SMART CHANNEL SELECTOR
 function SmartChannelSelector({repo,signal,onConfirm}){
-  const [status,setStatus]=useState('idle'); // idle | generating | done | error
+  const [status,setStatus]=useState('idle');
   const [recs,setRecs]=useState([]);
   const [stratNote,setStratNote]=useState('');
   const [toggled,setToggled]=useState({});
   const [error,setError]=useState('');
+  const [browseMode,setBrowseMode]=useState(false);
+
+  const isB2B=repo.mode==='b2b';
+
+  // Full channel catalog — both modes
+  const ALL_B2B_CHANNELS=[
+    {id:'email_sequence',name:'Email nurture sequence',category:'Email',desc:'5-email arc: problem → evidence → solution → proof → decision trigger'},
+    {id:'cold_outreach',name:'Cold outreach sequence',category:'Email',desc:'3-email cold sequence for net-new pipeline. Under 60 words each.'},
+    {id:'event_follow_up',name:'Event / webinar follow-up',category:'Email',desc:'3-email post-event sequence to convert attendees into pipeline'},
+    {id:'linkedin_posts',name:'LinkedIn posts',category:'Social',desc:'4 posts over 2 weeks: problem → market data → outcome → POV'},
+    {id:'linkedin_inmail',name:'LinkedIn InMail',category:'Social',desc:'2 direct InMail messages for ABM and exec outreach'},
+    {id:'linkedin_ads',name:'LinkedIn Ads',category:'Paid',desc:'Sponsored content + Message Ad copy for Campaign Manager'},
+    {id:'google_ads',name:'Google Search Ads',category:'Paid',desc:'RSA headlines + descriptions for demand capture'},
+    {id:'landing_page',name:'Landing page',category:'Web',desc:'Full conversion page: headline, problem block, benefits, CTA'},
+    {id:'battlecard',name:'Sales battlecard',category:'Sales',desc:'One-page BDR/AE enablement: pitch, objections, discovery questions'},
+  ];
+
+  const ALL_B2C_CHANNELS=[
+    {id:'email',name:'Email sequence',category:'Email',desc:'3-5 emails: benefit-first, emotion before logic, social proof throughout'},
+    {id:'instagram_captions',name:'Instagram captions',category:'Social',desc:'4 posts with scroll-stopping hooks, 100-150 words, 5-8 hashtags'},
+    {id:'tiktok_script',name:'TikTok / Reels script',category:'Social',desc:'30-60 sec script: hook → problem → solution → proof → CTA'},
+    {id:'sms',name:'SMS messages',category:'Mobile',desc:'3 messages under 160 chars. Includes opt-out in first message.'},
+    {id:'meta_ads',name:'Meta Ads',category:'Paid',desc:'Feed, Story/Reels, and Carousel copy for Facebook and Instagram'},
+    {id:'google_ads',name:'Google Ads',category:'Paid',desc:'Search RSA + Shopping copy for high-intent demand capture'},
+    {id:'product_page',name:'Product page',category:'Web',desc:'Headline, bullets, description — outcome-led, Grade 7-8 reading level'},
+    {id:'influencer_brief',name:'Influencer brief',category:'Creator',desc:'Creator brief with talking points, restrictions, FTC disclosures, angles'},
+    {id:'ad_copy',name:'Ad copy (general)',category:'Paid',desc:'Headline + body + CTA variants adaptable across platforms'},
+  ];
+
+  const CATALOG=isB2B?ALL_B2B_CHANNELS:ALL_B2C_CHANNELS;
 
   async function getRecommendations(){
-    setStatus('generating');setError('');
+    setStatus('generating');setError('');setBrowseMode(false);
     try{
       const prompt=buildChannelPrompt(repo,signal);
       const raw=await callClaude('You are a campaign channel strategist. Return only valid JSON.',prompt,600);
@@ -1548,23 +1583,22 @@ function SmartChannelSelector({repo,signal,onConfirm}){
         const clean=raw.replace(/```json|```/g,'').trim();
         parsed=JSON.parse(clean);
       }catch(e){
-        // fallback: demo channels based on mode
         const isB2B=repo.mode==='b2b';
         parsed={
           channels:isB2B?[
-            {id:'email_sequence',name:'Email sequence',role:'Primary',rationale:'Multi-touch nurture is the core B2B pipeline driver for this campaign type.'},
-            {id:'linkedin_posts',name:'LinkedIn posts',role:'Supporting',rationale:'Extends reach to professional audience while nurture runs in parallel.'},
-            {id:'landing_page',name:'Landing page',role:'Supporting',rationale:'Campaign needs a conversion surface to capture inbound from LinkedIn.'},
+            {id:'email_sequence',name:'Email sequence',role:'Primary',rationale:'Multi-touch nurture is the core B2B pipeline driver for this campaign type.',best_practices:['Send Tue-Thu 8-10am recipient timezone','Set enrollment trigger on form fill or content download','Test subject lines with 2 variants before full send']},
+            {id:'linkedin_posts',name:'LinkedIn posts',role:'Supporting',rationale:'Extends reach to professional audience while nurture runs in parallel.',best_practices:['Post Tue and Wed for peak B2B engagement','Pin top-performing post to profile','Engage comments within first 2 hours of posting']},
+            {id:'landing_page',name:'Landing page',role:'Supporting',rationale:'Campaign needs a conversion surface to capture inbound from LinkedIn.',best_practices:['Keep form to 4 fields max','Add social proof above the fold','Set up conversion event in analytics before launch']},
           ]:[
-            {id:'email',name:'Email sequence',role:'Primary',rationale:'Email drives the highest ROI for DTC retention and lifecycle campaigns.'},
-            {id:'instagram_captions',name:'Instagram captions',role:'Primary',rationale:'Visual platform aligns with where this customer discovers and engages.'},
-            {id:'ad_copy',name:'Ad copy',role:'Supporting',rationale:'Paid amplification accelerates reach for this campaign type.'},
+            {id:'email',name:'Email sequence',role:'Primary',rationale:'Email drives the highest ROI for DTC retention and lifecycle campaigns.',best_practices:['Send Tue, Thu, Sun for DTC engagement peaks','Segment by purchase history before sending','A/B test subject line on 20% of list before full send']},
+            {id:'instagram_captions',name:'Instagram captions',role:'Supporting',rationale:'Instagram extends reach and drives product discovery for this audience.',best_practices:['Post Tue-Fri 11am-1pm for peak engagement','Add alt text for accessibility','Cross-post to Stories with link sticker']},
+            {id:'meta_ads',name:'Meta Ads',role:'Supporting',rationale:'Paid amplification to reach new audiences beyond organic.',best_practices:['Set frequency cap at 3 per week','Build lookalike from top 10% of customer list','Always run 2 creative variants minimum']},
           ],
-          strategy_note:'These channels work together as a push-pull system — paid brings new eyes while email converts warm audiences.'
+          strategy_note:'These channels work as a push-pull system — email converts warm audiences while social and paid bring new eyes.'
         };
       }
       const init={};
-      (parsed.channels||[]).forEach(c=>{init[c.id]=true;});
+      (parsed.channels||[]).forEach(ch=>{init[ch.id]=true;});
       setRecs(parsed.channels||[]);
       setStratNote(parsed.strategy_note||'');
       setToggled(init);
@@ -1572,20 +1606,47 @@ function SmartChannelSelector({repo,signal,onConfirm}){
     }catch(e){setError('Could not get recommendations. Please try again.');setStatus('error');}
   }
 
-  const selectedChannels=recs.filter(c=>toggled[c.id]);
+  function toggleChannel(id){
+    setToggled(t=>({...t,[id]:!t[id]}));
+  }
+
+  // Merge AI recs with manual browse selections into one confirmed list
+  function buildConfirmedList(){
+    if(browseMode){
+      // Manual: use full catalog filtered by toggled, preserve order
+      return CATALOG.filter(ch=>toggled[ch.id]).map(ch=>({
+        ...ch,
+        role:recs.find(r=>r.id===ch.id)?.role||'Primary',
+        rationale:recs.find(r=>r.id===ch.id)?.rationale||'Manually selected for this campaign.',
+        best_practices:recs.find(r=>r.id===ch.id)?.best_practices||[]
+      }));
+    }
+    return recs.filter(ch=>toggled[ch.id]);
+  }
+
+  const confirmed=buildConfirmedList();
+
   const roleLabel=r=>r==='Primary'?'Primary':r==='Supporting'?'Supporting':'Optional';
   const roleClass=r=>r==='Primary'?'ch-role-primary':r==='Supporting'?'ch-role-supporting':'ch-role-optional';
 
+  const CATEGORY_COLORS={
+    Email:'#dbeafe',Social:'#ede9fe',Paid:'#fef3c7',Web:'#dcfce7',Sales:'#fce7f3',Mobile:'#cffafe',Creator:'#ffedd5'
+  };
+  const CATEGORY_TEXT={
+    Email:'#1e40af',Social:'#6d28d9',Paid:'#92400e',Web:'#166534',Sales:'#9d174d',Mobile:'#164e63',Creator:'#9a3412'
+  };
+
   if(status==='idle')return React.createElement('div',{style:{marginTop:8}},
-    React.createElement('div',{className:'info-box info-blue',style:{marginBottom:10}},'Based on your campaign type and goal, your agent will recommend the best channel mix. You can adjust before proceeding.'),
-    React.createElement('button',{className:'btn bp bsm',onClick:getRecommendations},React.createElement(IcoSpark),' Get channel recommendations')
+    React.createElement('div',{className:'info-box info-blue',style:{marginBottom:10}},'Smart Channel Selector analyzes your campaign brief and recommends the best channel mix with deployment tips.'),
+    React.createElement('div',{style:{display:'flex',gap:8}},
+      React.createElement('button',{className:'btn bp bsm',onClick:getRecommendations},'✨ Get AI recommendations'),
+      React.createElement('button',{className:'btn bo bsm',onClick:()=>{setBrowseMode(true);setStatus('done');setToggled({});}},'Browse all channels')
+    )
   );
 
-  if(status==='generating')return React.createElement('div',{className:'ch-rec'},
-    React.createElement('div',{className:'ch-generating'},
-      React.createElement('div',{className:'spinner-dark'}),
-      React.createElement('span',null,'Analyzing campaign brief and recommending channels...')
-    )
+  if(status==='generating')return React.createElement('div',{className:'ch-generating'},
+    React.createElement('div',{className:'spinner'}),
+    'Analyzing campaign brief and selecting optimal channels…'
   );
 
   if(status==='error')return React.createElement('div',null,
@@ -1593,43 +1654,98 @@ function SmartChannelSelector({repo,signal,onConfirm}){
     React.createElement('button',{className:'btn bo bsm',onClick:getRecommendations},'Try again')
   );
 
+  // DONE — show channels (AI recommendations or browse mode)
   return React.createElement('div',{className:'fade-in'},
     React.createElement('div',{className:'ch-rec'},
       React.createElement('div',{className:'ch-rec-header'},
         React.createElement('div',null,
-          React.createElement('div',{className:'ch-rec-title'},'Recommended channel mix'),
-          stratNote&&React.createElement('div',{className:'ch-rec-sub'},stratNote)
+          React.createElement('div',{className:'ch-rec-title'},browseMode?'All channels — select what fits':'Recommended channel mix'),
+          !browseMode&&stratNote&&React.createElement('div',{className:'ch-rec-sub'},stratNote),
+          browseMode&&React.createElement('div',{className:'ch-rec-sub'},'Select the channels you want included in your asset package. Your agent writes complete, deployment-ready copy for each.')
         ),
-        React.createElement('button',{className:'btn bg bsm',style:{fontSize:11},onClick:getRecommendations},'Regenerate')
-      ),
-      recs.map(ch=>React.createElement('div',{key:ch.id,className:'ch-item'},
-        React.createElement('div',{className:'ch-toggle'},
-          React.createElement('div',{className:`ch-check ${toggled[ch.id]?'on':''}`,onClick:()=>setToggled(t=>({...t,[ch.id]:!t[ch.id]}))},
-            toggled[ch.id]&&React.createElement(IcoCheck)
-          )
-        ),
-        React.createElement('div',{className:'ch-info'},
-          React.createElement('div',{className:'ch-name'},
-            ch.name,
-            React.createElement('span',{className:`ch-role ${roleClass(ch.role)}`},roleLabel(ch.role))
-          ),
-          React.createElement('div',{className:'ch-rationale'},ch.rationale),
-          ch.best_practices&&ch.best_practices.length>0&&React.createElement('div',{style:{marginTop:8,paddingTop:8,borderTop:'1px solid var(--border)'}},
-            React.createElement('div',{style:{fontSize:11,fontWeight:700,color:'var(--t3)',textTransform:'uppercase',letterSpacing:'.06em',marginBottom:5}},'Deployment tips'),
-            React.createElement('ul',{style:{margin:0,paddingLeft:16}},
-              ch.best_practices.map((tip,i)=>React.createElement('li',{key:i,style:{fontSize:12,color:'var(--t2)',lineHeight:1.5,marginBottom:3}},tip))
-            )
-          )
+        React.createElement('div',{style:{display:'flex',gap:8}},
+          browseMode
+            ?React.createElement('button',{className:'btn bg bsm',style:{fontSize:11},onClick:getRecommendations},'✨ Get AI pick')
+            :React.createElement('button',{className:'btn bg bsm',style:{fontSize:11},onClick:()=>{setBrowseMode(true);const init={};recs.forEach(ch=>{init[ch.id]=true;});setToggled(init);}},'Browse all channels'),
+          !browseMode&&React.createElement('button',{className:'btn bo bsm',style:{fontSize:11},onClick:getRecommendations},'Regenerate')
         )
-      ))
+      ),
+      browseMode
+        ?React.createElement('div',null,
+          Object.entries(
+            CATALOG.reduce(function(acc,ch){
+              if(!acc[ch.category])acc[ch.category]=[];
+              acc[ch.category].push(ch);
+              return acc;
+            },{})
+          ).map(function(entry){
+            var cat=entry[0]; var channels=entry[1];
+            return React.createElement('div',{key:cat,style:{marginBottom:16}},
+              React.createElement('div',{style:{
+                fontSize:11,fontWeight:700,letterSpacing:'.07em',textTransform:'uppercase',
+                color:CATEGORY_TEXT[cat]||'var(--t3)',marginBottom:8,
+                display:'flex',alignItems:'center',gap:6
+              }},
+                React.createElement('span',{style:{
+                  background:CATEGORY_COLORS[cat]||'var(--bg)',
+                  color:CATEGORY_TEXT[cat]||'var(--t3)',
+                  padding:'2px 8px',borderRadius:20,fontSize:10
+                }},cat)
+              ),
+              channels.map(function(ch){
+                var isOn=!!toggled[ch.id];
+                return React.createElement('div',{
+                  key:ch.id,
+                  className:'ch-item',
+                  style:{cursor:'pointer',background:isOn?'#f0fdf4':'white',borderColor:isOn?'var(--green)':'var(--border)'},
+                  onClick:function(){toggleChannel(ch.id);}
+                },
+                  React.createElement('div',{className:'ch-toggle'},
+                    React.createElement('div',{className:'ch-check '+(isOn?'on':''),onClick:function(e){e.stopPropagation();toggleChannel(ch.id);}},
+                      isOn&&React.createElement(IcoCheck)
+                    )
+                  ),
+                  React.createElement('div',{className:'ch-info'},
+                    React.createElement('div',{className:'ch-name'},ch.name),
+                    React.createElement('div',{className:'ch-rationale'},ch.desc)
+                  )
+                );
+              })
+            );
+          })
+        )
+        :recs.map(function(ch){
+          return React.createElement('div',{key:ch.id,className:'ch-item'},
+            React.createElement('div',{className:'ch-toggle'},
+              React.createElement('div',{className:'ch-check '+(toggled[ch.id]?'on':''),onClick:function(){toggleChannel(ch.id);}},
+                toggled[ch.id]&&React.createElement(IcoCheck)
+              )
+            ),
+            React.createElement('div',{className:'ch-info'},
+              React.createElement('div',{className:'ch-name'},
+                ch.name,
+                React.createElement('span',{className:'ch-role '+roleClass(ch.role)},roleLabel(ch.role))
+              ),
+              React.createElement('div',{className:'ch-rationale'},ch.rationale),
+              ch.best_practices&&ch.best_practices.length>0&&React.createElement('div',{style:{marginTop:8,paddingTop:8,borderTop:'1px solid var(--border)'}},
+                React.createElement('div',{style:{fontSize:11,fontWeight:700,color:'var(--t3)',textTransform:'uppercase',letterSpacing:'.06em',marginBottom:5}},'Deployment tips'),
+                React.createElement('ul',{style:{margin:0,paddingLeft:16}},
+                  ch.best_practices.map(function(tip,i){return React.createElement('li',{key:i,style:{fontSize:12,color:'var(--t2)',lineHeight:1.5,marginBottom:3}},tip);})
+                )
+              )
+            )
+          );
+        })
     ),
-    selectedChannels.length>0&&React.createElement('div',{style:{display:'flex',justifyContent:'flex-end',marginTop:12}},
-      React.createElement('button',{className:'btn bp',onClick:()=>onConfirm(selectedChannels)},
-        React.createElement(IcoCheck),` Confirm ${selectedChannels.length} channel${selectedChannels.length>1?'s':''} & continue`
+    confirmed.length>0&&React.createElement('div',{style:{display:'flex',justifyContent:'flex-end',alignItems:'center',gap:12,marginTop:12}},
+      React.createElement('div',{style:{fontSize:12,color:'var(--t3)'}},confirmed.length+' channel'+(confirmed.length!==1?'s':'')+' selected'),
+      React.createElement('button',{className:'btn bp',onClick:function(){onConfirm(confirmed);}},
+        React.createElement(IcoCheck),' Confirm '+confirmed.length+' channel'+(confirmed.length!==1?'s':'')+' & continue'
       )
     )
   );
 }
+
 
 // CAMPAIGN BUILDER
 function GeneratingOverlay({stage,messages=[]}){
@@ -1744,9 +1860,18 @@ function CampaignBuilder({repo,onSave,onBack,onGmailPush}){
   }
   async function genAssets(){
     setGenerating(true);setGeneratingStage('assets');
-    const out=await callClaude(buildSys(repo),buildAssetPrompt(repo,signal,confirmedChannels,strategy),2000);
     setAssetApprovals({});setAssetRevNotes({});setShowAssetRev({});
-    setAssets(out);setGenerating(false);setGeneratingStage('');advance();
+    // Generate each channel as a separate API call — avoids token truncation with multiple assets
+    const results=[];
+    for(let i=0;i<confirmedChannels.length;i++){
+      const ch=confirmedChannels[i];
+      setGeneratingStage('Building '+ch.name+' ('+(i+1)+' of '+confirmedChannels.length+')...');
+      const singlePrompt=buildSingleAssetPrompt(repo,signal,[ch],strategy);
+      const out=await callClaude(buildSys(repo),singlePrompt,1800);
+      results.push(out);
+    }
+    setAssets(results.join('\n\n---\n\n'));
+    setGenerating(false);setGeneratingStage('');advance();
   }
   async function genQA(){
     setGenerating(true);setGeneratingStage('qa');
@@ -1761,7 +1886,7 @@ function CampaignBuilder({repo,onSave,onBack,onGmailPush}){
     if (!ch) return;
     setRegenningAsset(channelId);
     const prompt = buildSys(repo) + `\n\nYou are rewriting a single asset from the campaign package. The strategy document and all other assets remain unchanged.\n\nCHANNEL TO REWRITE: ${ch.name}\n\nORIGINAL STRATEGY:\n${strategy}\n\nREVISION NOTE FROM REVIEWER:\n${revNote}\n\nReturn ONLY the revised asset for ${ch.name}, starting with ## ${ch.name.toUpperCase()} and ending cleanly. Do not include any other channel assets.`;
-    const out = await callClaude(buildSys(repo), prompt, 800);
+    const out = await callClaude(buildSys(repo), prompt, 1800);
     // Splice the new asset back into the full assets string
     const marker = '## ' + ch.name.toUpperCase();
     const altMarker = '## ' + ch.id.replace(/_/g,' ').toUpperCase();
